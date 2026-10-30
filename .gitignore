@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Private notes (owner only, never committed)
+private/
+
+# macOS
+.DS_Store
