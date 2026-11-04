@@ -147,6 +147,22 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** all earlier steps.
   - **Out of scope:** new features; pushing to GitHub (the owner does that).
 
+- [ ] **Step 17: Clipboard on the human desk**
+  - **Status:** not-started
+  - **Goal:** A clipboard on the human desk that shows the owner's build board: one bar per project with done/total and the current step, read from each project's PLAN.md. The hub only reads; nothing on the clipboard changes a plan.
+  - **Done when:** the clipboard opens from the desk by click and by keyboard; its numbers match the PLAN.md files in a test with a scripted plan folder.
+  - **Scope:** `lib/village/clipboard.ts`, `app/`, `e2e/`.
+  - **Dependencies:** steps 6 and 11.
+  - **Out of scope:** editing plans from the hub.
+
+- [ ] **Step 18: First real house: approval-desk**
+  - **Status:** not-started
+  - **Goal:** A read-only translator that turns approval-desk's logbook into the hub's feed format, so the first house shows a real agent at work.
+  - **Done when:** the translator runs against approval-desk's seeded database and the village plays its last ten logbook entries; a test proves the translator never writes.
+  - **Scope:** `lib/feed/translators/approval-desk.ts`, tests.
+  - **Dependencies:** steps 2, 3 and 8.
+  - **Out of scope:** any change inside approval-desk.
+
 ---
 
 ## Later (not now)
