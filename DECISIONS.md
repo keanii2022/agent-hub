@@ -62,6 +62,22 @@ Template:
 - Nothing says when a ready result leaves the desk. Step 12 ("seen") covers it.
 - The invented rows guess at approval-desk's time format and details. The real translator (step 18) may need to convert.
 
+## Step 3: Hub store (2026-11-09)
+
+**Built:** The hub's own add-only record of feed lines (`lib/store/`), in SQLite using Node's built-in one. Every line goes through the feed checker first; a refused line is not stored and the caller gets the plain-words reasons back. Adding the same line twice stores it once.
+**Decided:**
+- The database itself refuses changing, deleting and overwriting a line, not only the code in front of it (H4). Tests try raw SQL from a second connection and see it fail.
+- A different line that reuses a project's line number is refused in plain words and the first line stays.
+- "The same line" means the same data; the order of parts inside its details does not matter.
+- Lines are read back in the order they happened, with a second order (the order they arrived) for a reader that checks back for new lines.
+- The record keeps no "stored at" time, so playing the same lines into two fresh records gives identical data. Step 4 needs that.
+- Opening the store always needs a path, so a test can never open the real file by accident. The real file lives in `data/`, which is git-ignored.
+- A real database failure raises a clear error, which step 12 uses for H5.
+**Left for later:**
+- SQLite cannot stop someone with the file from deleting it or removing the guards. The guards cover changes to lines only; reopening the store puts missing guards back.
+- The checker accepts names with broken characters. The store copes; the checker could refuse them.
+- `ARCHITECTURE.md` part 5 does not describe the table layout; it lives in `lib/store/schema.ts`.
+
 ## Step 5: Pixel engine (2026-11-09)
 
 **Built:** The pixel engine (`lib/village/engine/`): a small fixed screen (384 by 216) drawn in memory and shown on a plain canvas at a whole-number scale, always sharp. A 28-colour dusk palette, a small pixel font stored as data in the repo, helpers for rectangles, sprites and text, and a clock with speed and pause. A throwaway page at `/lab` shows the palette, sample text and an animated campfire.

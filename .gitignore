@@ -19,6 +19,9 @@ AGENTS.md
 .env.*
 !.env.example
 
+# The hub's own database file
+data/
+
 # Private notes (owner only, never committed)
 private/
 

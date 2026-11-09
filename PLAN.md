@@ -35,8 +35,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** step 1.
   - **Out of scope:** reading approval-desk's real database or files; any storage; any art.
 
-- [ ] **Step 3: Hub store** (part 5)
-  - **Status:** current
+- [x] **Step 3: Hub store** (part 5)
+  - **Status:** done
   - **Goal:** The hub's own add-only record, in SQLite (Node's built-in one, as approval-desk does). It keeps the feed lines the hub has seen. Same idea as approval-desk's logbook: lines can be added, never changed, deleted or overwritten. Lines the checker refuses are not stored.
   - **Done when:** adding a line works; changing, deleting and overwriting a line all fail (H4); a refused line is not stored; adding the same line twice stores it once.
   - **Scope:** `lib/store/`, `tests/store/`, `data/` (the database file, git-ignored).
@@ -44,7 +44,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** the decisions table (step 12); any screen.
 
 - [ ] **Step 4: Scripted demo data and player** (part 6)
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** Invented, scripted feeds in the shared format: an approval-desk-style house with one agent, and a team house with three agents (its project name is settled in Q5). A player feeds them into the hub's store on a clock. When the hub opens, it first fills in the recent past so the village is already busy, then keeps playing new events. Every line is marked demo.
   - **Done when:** starting the hub loads the demo; running it twice gives identical data; every line is marked demo (H10); a read-only route lists recent events; the tests run with the network off (H11).
   - **Scope:** `lib/demo/` (scripts and player), one read-only route under `app/api/`, `tests/demo/`.
