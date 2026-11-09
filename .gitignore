@@ -1,6 +1,16 @@
 # Dependencies
 node_modules/
 
+# Build and test output
+.next/
+next-env.d.ts
+*.tsbuildinfo
+test-results/
+playwright-report/
+
+# Written by `next dev` on every start
+AGENTS.md
+
 # Secrets
 .env
 .env.*

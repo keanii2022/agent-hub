@@ -30,3 +30,14 @@ Template:
 - The pixel engine is built fresh here. Ideas come from approval-desk's village prototype; no files are copied until the owner decides how to reuse code.
 - The folder is `~/Projects/agent-hub` and the repo is named `agent-hub`. It stays local until the owner says push.
 **Left for later:** Open questions Q1 to Q8 in `RULES.md`. The "Later" list at the bottom of `PLAN.md` (real approval-desk house, decision door, more real houses, live updates, sound).
+
+## Step 1: Skeleton (2026-11-09)
+
+**Built:** The empty project: Next.js with TypeScript, Vitest and Playwright, one sample test for each, and `npm run hub`, which opens a page that says "Agent Hub" on port 4040.
+**Decided:**
+- The hub runs on port 4040 so it never clashes with another project's server.
+- The sample unit test checks that no AI or game packages are installed, so that promise is tested from day one.
+- `AGENTS.md` is git-ignored. Next.js writes it by itself every time the hub starts; the owner chose to keep it out of the public repo.
+- The browser tests can run on another port (`HUB_PORT`), so two copies of the repo can be tested at the same time.
+- The planning files were already committed before this step, so this commit holds only the skeleton.
+**Left for later:** `.env.example` is not created yet. Stage 1 needs no settings, so nothing depends on it.

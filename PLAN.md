@@ -19,8 +19,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
 
 ---
 
-- [ ] **Step 1: Skeleton**
-  - **Status:** current
+- [x] **Step 1: Skeleton**
+  - **Status:** done
   - **Goal:** Start the project: git, Next.js with TypeScript, Vitest, Playwright, one sample test for each, and one command (`npm run hub`) that starts the hub. Nothing else.
   - **Done when:** both sample tests pass; `npm run hub` opens a page that says "Agent Hub"; `.env` and `private/` are excluded from git (checked with `git check-ignore`); no AI or game packages are installed.
   - **Scope:** repo root files (`package.json`, `tsconfig.json`, Next.js and Playwright config, `.gitignore`, `.env.example`, README stub), `app/` with one blank page, `tests/`, `e2e/`. The planning files in this folder go into the first commit, after the owner approves the diff.
@@ -28,7 +28,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** feed, store, art; creating the GitHub repo (stay local until the owner says push; it will be public).
 
 - [ ] **Step 2: Feed format** (parts 3 and 4)
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** Write the shared feed format as code: types, plus a checker that accepts good lines and refuses bad ones with a plain-words reason. Settle open questions Q1 to Q4 and Q7 in `RULES.md`. Include one test where invented rows shaped like approval-desk's logbook (its four kinds) are translated into feed lines, to prove the format fits a real logbook.
   - **Done when:** good example lines pass; each kind of bad line (missing field, wrong type, bad time, unknown status) is refused with a plain reason (H8); tests show the same format works for a project with one agent and one with ten; the invented approval-desk-shaped rows translate into valid lines; the feed table in `ARCHITECTURE.md` matches the code.
   - **Scope:** `lib/feed/` (format, checker, sample translator for invented rows), `tests/feed/`, the feed section of `ARCHITECTURE.md`, open questions in `RULES.md`.
