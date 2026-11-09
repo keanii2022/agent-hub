@@ -51,8 +51,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** steps 2 and 3.
   - **Out of scope:** reading real projects; any art.
 
-- [ ] **Step 5: Pixel engine** (part 7, base)
-  - **Status:** not-started
+- [x] **Step 5: Pixel engine** (part 7, base)
+  - **Status:** done
   - **Goal:** Draw the pixel screen with a plain canvas: a small fixed-size screen scaled up sharp, a dusk colour palette, a small pixel font, drawing helpers, an animation clock, and pause. Built fresh in this repo; ideas come from approval-desk's village prototype, no files are copied unless the owner decides so (see `DECISIONS.md`).
   - **Done when:** a test page draws the palette, sample text and a sample sprite; it stays sharp (no blur) at 2x and 3x; a Playwright screenshot test passes; pause stops the animation.
   - **Scope:** `lib/village/engine/`, one throwaway test page (`app/lab/`), `tests/` and `e2e/`.

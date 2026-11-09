@@ -61,3 +61,18 @@ Template:
 - H6 says one decision per request, but a request may ask again. Step 12 has to say whether that means per request or per ask.
 - Nothing says when a ready result leaves the desk. Step 12 ("seen") covers it.
 - The invented rows guess at approval-desk's time format and details. The real translator (step 18) may need to convert.
+
+## Step 5: Pixel engine (2026-11-09)
+
+**Built:** The pixel engine (`lib/village/engine/`): a small fixed screen (384 by 216) drawn in memory and shown on a plain canvas at a whole-number scale, always sharp. A 28-colour dusk palette, a small pixel font stored as data in the repo, helpers for rectangles, sprites and text, and a clock with speed and pause. A throwaway page at `/lab` shows the palette, sample text and an animated campfire.
+**Decided:**
+- The screen is 384 by 216: it fills a 1080p screen exactly at 5x, fits a laptop window at 3x, and leaves room for several houses and their signs.
+- The picture is built in memory and the canvas only shows it, so nothing can blur it and drawing can be tested without a browser.
+- Sprites and helpers take colour names only, so everything stays inside the palette.
+- The clock never reads real time by itself; the frame loop feeds it. That makes it steppable by hand, so screenshots and tests are exact. Pause is the only way to stop time.
+- The font is fixed width, 5 by 9, with capitals, lowercase, digits and punctuation.
+- Built fresh; nothing was read or copied from another project.
+**Left for later:**
+- Saved screenshots are named for macOS. Running the browser tests on another system would need new ones.
+- No see-through drawing or glow yet; a later step can add it.
+- `/lab` stays reachable in the running app. No step removes it yet.
