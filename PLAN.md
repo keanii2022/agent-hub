@@ -59,8 +59,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** step 1.
   - **Out of scope:** the plaza, houses, characters, any feed data, any game library.
 
-- [ ] **Step 6: Plaza and the human desk** (part 7)
-  - **Status:** current
+- [x] **Step 6: Plaza and the human desk** (part 7)
+  - **Status:** done
   - **Goal:** The main community area: ground, paths, trees, plants, and clutter (broken robot arms, cigarette butts). The human desk sits in the middle, with the human (the robot's human cousin) always at his computer, typing. The home page shows it.
   - **Done when:** `npm run hub` shows the plaza with the human at his computer; the human animates (typing, small idle moves); the computer can be reached by keyboard and by click (it does nothing yet); a screenshot test passes.
   - **Scope:** `lib/village/plaza/`, `lib/village/characters/human`, `app/page.tsx`, `e2e/`.
@@ -68,7 +68,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** houses, the manager, the desk screen, any feed data.
 
 - [ ] **Step 7: Houses and signs** (part 7)
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** Houses placed around the plaza from one list (project name, sign style, outside props). Each has a Vegas-style neon sign with its name, in a style that fits the project, and props that fit it (for example a box and a box cutter left outside for boxcutter). A path runs from the desk to every house. Houses can be for sale (empty, with a sign). Adding a house means adding one entry to the list, plus props if they are new. Settle Q5.
   - **Done when:** the plaza shows the approval-desk house, a team house, and two for-sale houses, each reached by a path; each sign shows its name; a test adds a fifth house by editing only the list.
   - **Scope:** `lib/village/houses/`, `config/houses`, `tests/`, `e2e/`.

@@ -109,3 +109,20 @@ Template:
 - Saved screenshots are named for macOS. Running the browser tests on another system would need new ones.
 - No see-through drawing or glow yet; a later step can add it.
 - `/lab` stays reachable in the running app. No step removes it yet.
+
+## Step 6: Plaza and the human desk (2026-11-09)
+
+**Built:** The home page now shows the plaza at dusk: a sunset sky, grass, two dirt streets and a road to the hills, a paved square in the middle, trees, plants, lamp posts, broken robot arms and cigarette butts. The human sits in the middle at his desk and types at an old boxy computer; between typing he reads the screen, sips coffee, looks around, leans back and blinks. The computer is a real button that the keyboard and a click both reach. It does nothing yet.
+**Decided:**
+- A slanted top-down view with a strip of sunset sky, so it reads as dusk at a glance.
+- Two streets and a walk through the square, with six clear house lots along them. Every lot's doorstep already touches a street, so houses need no new paths.
+- The layout is data (lots, paths, and the desk's key spots: where a visitor stands, where the shoulder tap lands, where a paperwork stack and the alert mark go). Later steps read it instead of guessing.
+- Everything that moves is worked out from the clock time, apart from the drawing, so tests check what is happening and not only pixels.
+- `/?time=4200&scale=2` holds one exact frame, the same trick as the lab page, so screenshot tests never flicker.
+- The focus mark on the computer is painted into the picture as yellow corner brackets.
+- The seated human is 16 by 24 pixels; a standing character will be about 26 tall. Houses and doors are sized to that.
+**Left for later:**
+- The walk through the square runs under the desk. Walkers (step 9) have to go round it on the paving.
+- House signs will be tight: "approval-desk" is 78 pixels wide in the pixel font and a lot is 80.
+- The screen-reader description of the picture is fixed text for now; the live summary is step 15.
+- The owner has not judged the look yet.
