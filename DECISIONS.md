@@ -41,3 +41,23 @@ Template:
 - The browser tests can run on another port (`HUB_PORT`), so two copies of the repo can be tested at the same time.
 - The planning files were already committed before this step, so this commit holds only the skeleton.
 **Left for later:** `.env.example` is not created yet. Stage 1 needs no settings, so nothing depends on it.
+
+## Step 2: Feed format (2026-11-09)
+
+**Built:** The shared feed format as code (`lib/feed/`): the shape of a feed line, and a checker that accepts good lines and refuses bad ones, listing every problem in plain words. A sample translator turns invented approval-desk-shaped rows (all four kinds) into feed lines. The feed table in `ARCHITECTURE.md` matches the code, and a test fails if they drift apart.
+**Decided:**
+- Q1: both. A feed is a plain file with one line per event, or a read-only translator over the project's own records. Both go through the same checker. Stage 1 uses scripted files.
+- Q2: a card per project names its agents. An agent seen in the feed but not on the card is added automatically. Plain code that is not an agent is called `system`.
+- Q3: a `needs_human` line opens a request. A later line for the same request closes it if it points back at that line (a decision) or says done, blocked or failed (a finish). If a request asks again, the newest ask is the open one.
+- Q4: one list file in `config/` names every project and where its feed lives.
+- Q7 (shape): a line that needs the owner must list its choices, each with an id and a button label. The desk shows whatever is listed. Stage 1 offers approve and reject. Anything more is left to step 12.
+- Every line must say whether it is demo or real. A line with no mark is refused, so scripted data can never pass as real (H10).
+- Unknown parts are refused, not ignored, so a typo cannot silently drop an urgent mark. Nothing is trimmed or corrected by the checker.
+- Times are UTC in one fixed shape. Line ids are text, so a project with non-number ids still fits.
+- This step was built by an agent in its own copy of the repo while step 5 was built in another, with the owner's go-ahead to run the steps in parallel.
+**Left for later:**
+- The project list file and card (Q2, Q4) are answered in words only; the first step that needs them creates them.
+- "Is this request still open?" has no shared helper yet. Steps 8 and 11 both need it.
+- H6 says one decision per request, but a request may ask again. Step 12 has to say whether that means per request or per ask.
+- Nothing says when a ready result leaves the desk. Step 12 ("seen") covers it.
+- The invented rows guess at approval-desk's time format and details. The real translator (step 18) may need to convert.

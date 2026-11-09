@@ -11,6 +11,9 @@ playwright-report/
 # Written by `next dev` on every start
 AGENTS.md
 
+# Temporary copies of the repo used while building steps in parallel
+.claude/worktrees/
+
 # Secrets
 .env
 .env.*

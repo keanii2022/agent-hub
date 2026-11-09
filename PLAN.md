@@ -27,8 +27,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** none.
   - **Out of scope:** feed, store, art; creating the GitHub repo (stay local until the owner says push; it will be public).
 
-- [ ] **Step 2: Feed format** (parts 3 and 4)
-  - **Status:** current
+- [x] **Step 2: Feed format** (parts 3 and 4)
+  - **Status:** done
   - **Goal:** Write the shared feed format as code: types, plus a checker that accepts good lines and refuses bad ones with a plain-words reason. Settle open questions Q1 to Q4 and Q7 in `RULES.md`. Include one test where invented rows shaped like approval-desk's logbook (its four kinds) are translated into feed lines, to prove the format fits a real logbook.
   - **Done when:** good example lines pass; each kind of bad line (missing field, wrong type, bad time, unknown status) is refused with a plain reason (H8); tests show the same format works for a project with one agent and one with ten; the invented approval-desk-shaped rows translate into valid lines; the feed table in `ARCHITECTURE.md` matches the code.
   - **Scope:** `lib/feed/` (format, checker, sample translator for invented rows), `tests/feed/`, the feed section of `ARCHITECTURE.md`, open questions in `RULES.md`.
@@ -36,7 +36,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** reading approval-desk's real database or files; any storage; any art.
 
 - [ ] **Step 3: Hub store** (part 5)
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** The hub's own add-only record, in SQLite (Node's built-in one, as approval-desk does). It keeps the feed lines the hub has seen. Same idea as approval-desk's logbook: lines can be added, never changed, deleted or overwritten. Lines the checker refuses are not stored.
   - **Done when:** adding a line works; changing, deleting and overwriting a line all fail (H4); a refused line is not stored; adding the same line twice stores it once.
   - **Scope:** `lib/store/`, `tests/store/`, `data/` (the database file, git-ignored).

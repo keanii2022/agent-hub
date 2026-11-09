@@ -54,23 +54,23 @@ One server runs everything: `npm run hub`. No project needs its own server runni
 
 ## The feed
 
-One line per step. It says which project, which agent, which request, what step, what happened, and when. It works the same for a project with one agent or ten. Exact names and types are settled in step 2.
+One line per step. It says which project, which agent, which request, what step, what happened, and when. It works the same for a project with one agent or ten. The names and types below are the ones in `lib/feed/format.ts`, and a test keeps this table and the code the same.
 
-| Field | Says | Example |
-|-------|------|---------|
-| project | Which project | `approval-desk` |
-| agent | Which agent did it (`system` for plain code, like a gate) | `refund-agent` |
-| request | Which request or job | `REQ-014` |
-| step | What step, in one short word | `gate_decision` |
-| what | What happened, in one plain sentence | `Over the limit, sent to a person` |
-| status | How the village should react (see below) | `needs_human` |
-| when | UTC time | `2026-10-05T14:03:11Z` |
-| id | The project's own line number | `41` |
-| refers_to | An earlier line this one is about (optional) | `40` |
-| choices | For `needs_human`: what the owner may do (optional) | `approve, reject` |
-| urgent | The project marks it urgent (optional) | `true` |
-| details | Extra information for the desk screen (optional, any JSON) | `{...}` |
-| demo | `true` on scripted data | `true` |
+| Field | Type | Needed | Says | Example |
+|-------|------|--------|------|---------|
+| project | text | always | Which project | `"approval-desk"` |
+| agent | text | always | Which agent did it (`system` for plain code, like a gate) | `"refund-agent"` |
+| request | text | always | Which request or job | `"REQ-014"` |
+| step | text, one word | always | What step, in one short word | `"gate_decision"` |
+| what | text | always | What happened, in one plain sentence | `"Over the limit, sent to a person"` |
+| status | one of the six below | always | How the village should react | `"needs_human"` |
+| when | text, UTC time ending in `Z` | always | When it happened | `"2026-10-05T14:03:11Z"` |
+| id | text | always | The project's own line number. No two lines of one project share it | `"41"` |
+| refers_to | text | optional | The `id` of an earlier line this one is about | `"40"` |
+| choices | list of `{ id, label }` | waiting lines only | What the owner may do. A `needs_human` line must list at least one; no other line may | `[{"id":"approve","label":"Approve"},{"id":"reject","label":"Reject"}]` |
+| urgent | true or false | optional | The project marks it urgent | `true` |
+| details | any JSON | optional | Extra information for the desk screen | `{"amount":250}` |
+| demo | true or false | always | `true` on scripted data, `false` on real | `true` |
 
 **Status values**
 
@@ -83,9 +83,15 @@ One line per step. It says which project, which agent, which request, what step,
 | `blocked` | A rule stopped it |
 | `failed` | Something broke |
 
-**How approval-desk fits.** Its logbook has `id`, `logged_at`, `kind`, `request_id`, `refers_to` and `details`. A translator maps them to `id`, `when`, `step`, `request`, `refers_to` and `details`, and fills in what the logbook doesn't say: `project`, `agent`, `what` and `status`. Its four kinds map like this: `gate_decision` (send to a human becomes `needs_human`, block becomes `blocked`, allow becomes `working`), `human_decision` (`working`), `refund_done` (`done`), and `refund_refused` (`blocked`). approval-desk is not changed.
+**Choices.** Each choice has an `id` (the short word carried to the project's door) and a `label` (the plain words on the button). The desk shows whatever a line lists. Stage 1 offers `approve` and `reject`. A choice with the id `reject` always needs a note (H7).
 
-**A request's life.** A `needs_human` line opens it. A later line for the same request that is a decision or a finish closes it. The desk shows the open ones. (Confirmed in step 2, Q3.)
+**What the checker refuses (H8).** A line is refused, with every problem listed in plain words, when: a needed field is missing; a field has the wrong type (the `id` `41` as a number instead of the text `"41"`, for example); a text is empty; a name starts or ends with a space; the step is more than one word; the status isn't one of the six; the time isn't a real UTC time written like the example; a field isn't in the table above (extra information goes in `details`); the choices break the rule in the table; or a line points at itself. An optional field is left out when there is nothing to say; an empty value in its place is refused. Nothing is trimmed, filled in or corrected.
+
+**Where a feed lives.** Either a plain text file the project adds to, one JSON line per feed line, or a translator that reads the project's own logbook read-only. Both give the same lines to the same checker. (Settled in step 2, Q1.)
+
+**How approval-desk fits.** Its logbook has `id`, `logged_at`, `kind`, `request_id`, `refers_to` and `details`. A translator maps them to `id`, `when`, `step`, `request`, `refers_to` and `details` (the two line numbers become text), and fills in what the logbook doesn't say: `project`, `agent`, `what`, `status`, `demo`, and the `choices` on a waiting line. Its four kinds map like this: `gate_decision` (send to a human becomes `needs_human`, block becomes `blocked`, allow becomes `working`), `human_decision` (`working`), `refund_done` (`done`), and `refund_refused` (`blocked`). A kind or gate outcome the translator doesn't know is refused, never guessed. approval-desk is not changed. Step 2 proves this with invented rows in that shape (`lib/feed/sample-translator.ts`); the real logbook is first read in Stage 2.
+
+**A request's life.** A `needs_human` line opens it. It is closed by a later line for the same request, in the same project, that is either a decision (its `refers_to` points at the `needs_human` line) or a finish (its status is `done`, `blocked` or `failed`). If a request asks again with a new `needs_human` line, the newest one is the open one. The desk shows the open ones. (Settled in step 2, Q3.)
 
 ## What you see
 
