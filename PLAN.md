@@ -43,8 +43,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** step 2.
   - **Out of scope:** the decisions table (step 12); any screen.
 
-- [ ] **Step 4: Scripted demo data and player** (part 6)
-  - **Status:** current
+- [x] **Step 4: Scripted demo data and player** (part 6)
+  - **Status:** done
   - **Goal:** Invented, scripted feeds in the shared format: an approval-desk-style house with one agent, and a team house with three agents (its project name is settled in Q5). A player feeds them into the hub's store on a clock. When the hub opens, it first fills in the recent past so the village is already busy, then keeps playing new events. Every line is marked demo.
   - **Done when:** starting the hub loads the demo; running it twice gives identical data; every line is marked demo (H10); a read-only route lists recent events; the tests run with the network off (H11).
   - **Scope:** `lib/demo/` (scripts and player), one read-only route under `app/api/`, `tests/demo/`.
@@ -60,7 +60,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** the plaza, houses, characters, any feed data, any game library.
 
 - [ ] **Step 6: Plaza and the human desk** (part 7)
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** The main community area: ground, paths, trees, plants, and clutter (broken robot arms, cigarette butts). The human desk sits in the middle, with the human (the robot's human cousin) always at his computer, typing. The home page shows it.
   - **Done when:** `npm run hub` shows the plaza with the human at his computer; the human animates (typing, small idle moves); the computer can be reached by keyboard and by click (it does nothing yet); a screenshot test passes.
   - **Scope:** `lib/village/plaza/`, `lib/village/characters/human`, `app/page.tsx`, `e2e/`.

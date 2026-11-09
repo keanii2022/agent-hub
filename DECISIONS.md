@@ -78,6 +78,23 @@ Template:
 - The checker accepts names with broken characters. The store copes; the checker could refuse them.
 - `ARCHITECTURE.md` part 5 does not describe the table layout; it lives in `lib/store/schema.ts`.
 
+## Step 4: Scripted demo data and player (2026-11-09)
+
+**Built:** Two invented, scripted days in the shared feed format (`lib/demo/`): approval-desk with one agent, and a team house with three. A player fills in the recent past when the hub opens, then adds each new line when its moment comes. Every line is marked demo. A read-only route (`/api/events`) lists recent events.
+**Decided:**
+- Q5, in part: the team house's project is called `boxcutter` for now. The owner has not confirmed the name; it is written in one place (`lib/demo/scripts/team-house.ts`) so it is a one-line change, and a test keeps it that way.
+- Each script is a short day that repeats (20 minutes for approval-desk, 30 for the team house), counted from a fixed start date. A line's time and number come only from the script and the day count, so the same moment always gives the same lines and replaying adds nothing twice. Something is always happening when the hub opens.
+- Every waiting request is closed inside its own scripted day, so a database that is kept between runs never fills up with open requests.
+- Agents arriving and leaving are lines in the feed, so the number of residents can change without changing the format.
+- The player starts on the first request to the hub, once per server, and survives hot reload.
+- The database location can be set with `HUB_DATABASE_PATH`, so browser tests can use their own file.
+- Next.js serves the built-in SQLite from a route with no config change.
+**Left for later:**
+- After editing a script, delete `data/hub.sqlite`; changed lines for the current scripted day are refused until the next one.
+- There is no way yet to freeze the player's clock for a running hub. Screenshot tests that show feed data need one (step 8).
+- Scripted "the owner approved" lines are demo data from the project, not decisions made at the hub's desk. Step 12 decides how they sit side by side.
+- Port 4045 cannot be used with Next.js (it is on its reserved list).
+
 ## Step 5: Pixel engine (2026-11-09)
 
 **Built:** The pixel engine (`lib/village/engine/`): a small fixed screen (384 by 216) drawn in memory and shown on a plain canvas at a whole-number scale, always sharp. A 28-colour dusk palette, a small pixel font stored as data in the repo, helpers for rectangles, sprites and text, and a clock with speed and pause. A throwaway page at `/lab` shows the palette, sample text and an animated campfire.
