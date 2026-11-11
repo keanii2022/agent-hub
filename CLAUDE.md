@@ -22,8 +22,8 @@ Ask before adding anything outside this list.
 
 1. One step per session. Start by reading `PLAN.md` and finding the step marked `current`.
 2. Stay inside that step's scope. If something else needs doing, note it; don't do it.
-3. A step is done only when its "done when" is true. Show the proof (for example, test output).
-4. Show the owner the diff and wait for their OK before any commit.
+3. A step is done only when its "done when" is true. Proof is tests passing (one line) plus something to click.
+4. Wait for the owner's OK before any commit.
 5. End every step by:
    - explaining in plain words what was built
    - adding an entry to `DECISIONS.md`
