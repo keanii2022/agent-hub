@@ -7,8 +7,10 @@ import { signStateAt, type SignState } from "./signs";
 
 /** The part of a house's state that comes from news about its project, not from the clock. */
 export type HouseStatus = {
-  /** How many windows glow, counted in the house's own window order. More than it has lights them all. */
+  /** How many windows glow brightly, counted in the house's own window order: one for each agent working. More than it has lights them all. */
   readonly litWindows: number;
+  /** How many of the next windows glow softly: one for each agent who is home but not working. Only as many as are left show. */
+  readonly softWindows: number;
   /** Lights out and the sign off: nobody lives here, or there has been no news. */
   readonly isDark: boolean;
   /** Plain words hung under the sign, for example "no news"; null for none. */
@@ -25,14 +27,16 @@ export type HouseState = HouseStatus & {
 export const DEMO_TAG = "DEMO";
 
 /**
- * What a house shows before anything is known about its project: someone home
- * behind one window, and a tag if its activity will be scripted. A house for
- * sale is dark.
+ * What a house shows when it is drawn without any news of its project: someone
+ * home behind one window, and a tag if its activity is scripted. A house for
+ * sale is dark. The home page never shows this: its houses follow the feed
+ * (`lib/village/state`).
  */
 export function defaultHouseStatus(house: PlacedHouse): HouseStatus {
-  if (house.isForSale) return { litWindows: 0, isDark: true, note: null, tag: null };
+  if (house.isForSale) return { litWindows: 0, softWindows: 0, isDark: true, note: null, tag: null };
   return {
     litWindows: 1,
+    softWindows: 0,
     isDark: false,
     note: null,
     tag: house.data === "demo" ? DEMO_TAG : null,
@@ -47,9 +51,11 @@ export function houseStateAt(
   status: HouseStatus = defaultHouseStatus(house),
 ): HouseState {
   const letters = house.sign ? house.sign.lines.join("").length : 0;
+  const litWindows = status.isDark ? 0 : Math.max(0, Math.min(status.litWindows, house.windows.length));
   return {
     ...status,
-    litWindows: status.isDark ? 0 : Math.max(0, Math.min(status.litWindows, house.windows.length)),
+    litWindows,
+    softWindows: status.isDark ? 0 : Math.max(0, Math.min(status.softWindows, house.windows.length - litWindows)),
     sign: house.sign ? signStateAt(timeMs, house.listOrder, letters, !status.isDark) : null,
   };
 }

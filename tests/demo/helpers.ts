@@ -70,6 +70,12 @@ export function oneDayOf(script: DemoScript, moment: Date = A_MOMENT_IN_THE_DEMO
   return daysOf(script, 1, moment);
 }
 
+/** When the scripted day `moment` falls in began. */
+export function dayStartOf(script: DemoScript, moment: Date = A_MOMENT_IN_THE_DEMO): Date {
+  const compiled = compileDemoScript(script);
+  return startOfDay(compiled, dayNumberAt(compiled, moment));
+}
+
 export function daysOf(script: DemoScript, days: number, moment: Date): FeedLine[] {
   const compiled = compileDemoScript(script);
   const firstDay = dayNumberAt(compiled, moment);

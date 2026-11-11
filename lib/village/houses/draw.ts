@@ -50,6 +50,12 @@ function drawLitGlass(surface: Surface, glass: Rect): void {
   fillRect(surface, glass.x, glass.y + glass.height - 2, glass.width, 2, "sunset");
 }
 
+/** A lamp turned low: someone is in, but not at work. No yellow in it, so it is never taken for a working window. */
+function drawSoftGlass(surface: Surface, glass: Rect): void {
+  fillRect(surface, glass.x, glass.y, glass.width, glass.height, "sunset");
+  fillRect(surface, glass.x, glass.y + glass.height - 2, glass.width, 2, "clay");
+}
+
 function drawStep(surface: Surface, step: Rect): void {
   fillRect(surface, step.x, step.y, step.width, step.height, "ink");
   fillRect(surface, step.x + 1, step.y, step.width - 2, 1, "mist");
@@ -83,11 +89,12 @@ export function drawHouse(surface: Surface, house: PlacedHouse, state: HouseStat
 
   if (!state.isDark) {
     drawLitGlass(surface, { ...DOOR_LIGHT, x: DOOR_LIGHT.x + house.body.x, y: DOOR_LIGHT.y + house.body.y });
-    for (const window of house.windows.slice(0, state.litWindows)) {
+    house.windows.slice(0, state.litWindows + state.softWindows).forEach((window, index) => {
       const glass = glassOfWindow(house.build, window);
-      drawLitGlass(surface, glass);
+      if (index < state.litWindows) drawLitGlass(surface, glass);
+      else drawSoftGlass(surface, glass);
       paintWindowBars(surface, glass, "wood");
-    }
+    });
   }
   drawStep(surface, house.step);
 

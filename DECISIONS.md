@@ -144,3 +144,21 @@ Template:
 - The list has no agent cards or feed locations yet (Q2, Q4); the first step that needs them adds them.
 - A plaza lamp post stands just left of the team house's door and its glow speckles that wall. Moving it is the owner's call.
 - A third sign style ("pink star") exists but no house uses it yet.
+
+## Step 8: The village comes alive from the feed (2026-11-11)
+
+**Built:** Houses now follow the hub's record. Each house lights one window per agent at home: bright while that agent is working, soft orange while it is in but between jobs, off when nobody is there. A house with no news for five minutes goes dark with a "no news" note, and so does a house whose lines can't be read, while the others keep running (H9). The DEMO tag shows in every case (H10). The page asks a new read-only route (`/api/village`) every two seconds, and the picture's description for screen readers says the same news in words.
+**Decided:**
+- One pure function turns feed lines plus a moment into the village's state: who is home, who is working and on what, what is waiting for the owner and for how long. Later steps (manager, paperwork, desk, house insides, walkers) all read that same state.
+- The rule for what opens and closes a waiting request (Q3) is built once, in `lib/feed/requests.ts`, so the desk screen uses the same one.
+- An agent is home from its first line until its "leave" line, so a real project with no arrive and leave lines still works, and a new agent shows up by itself (Q2).
+- "A while" is five minutes without a line. The longest quiet stretch in the scripts is just over three, so a demo house only goes dark when its feed has really stopped. Nobody home is not "no news": the windows are off but the sign stays on.
+- The note says "no news" for both silence and a broken feed. The reason is kept in the data only.
+- A dark house still lists its waiting requests, because the owner still owes an answer.
+- Browser tests run against a hub frozen on one moment (`HUB_FROZEN_AT`) with its record in memory, so every run sees the same village and leaves nothing behind. `npm run hub` without it is fully live.
+**Left for later:**
+- Nothing in the rules says what clears a ready result. For now it stays ready until its request says something newer, so results pile up. Step 10's stack and step 11's list need an answer; step 12's "seen" is the likely one.
+- Five minutes is tuned to the demo. A real project that is quiet overnight would show "no news"; step 18 should give real houses a longer wait.
+- The village looks back 24 hours, so a request waiting longer than a day drops out of the picture (the record keeps it).
+- If the owner's own hub is running on port 4040, `npm run e2e` reuses it and fails with a plain message asking to stop it first.
+- `ARCHITECTURE.md`'s "what you see" table does not mention the soft window or the five minutes yet.

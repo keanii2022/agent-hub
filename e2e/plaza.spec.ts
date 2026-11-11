@@ -2,6 +2,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { HUMAN_HEIGHT, HUMAN_WIDTH } from "../lib/village/characters/human";
 import { SCREEN_HEIGHT, SCREEN_WIDTH, palette } from "../lib/village/engine";
 import { desk, type Rect } from "../lib/village/plaza";
+import { expectTheFrozenVillage } from "./frozen-hub";
 
 // Paused at a known moment, the plaza always paints the same frame.
 const FIXED_TIME_MS = 4200;
@@ -15,6 +16,7 @@ async function openPlaza(page: Page, query: string, expectedScale: number): Prom
   await page.addStyleTag({ content: "nextjs-portal { display: none !important; }" });
   const canvas = page.getByRole("img", { name: /plaza at dusk/i });
   await expect(canvas).toHaveAttribute("data-pixel-scale", String(expectedScale));
+  await expectTheFrozenVillage(canvas);
   return canvas;
 }
 

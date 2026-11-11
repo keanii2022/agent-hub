@@ -258,7 +258,13 @@ describe("a house for sale", () => {
   it("is dark and empty: no lit window, no neon, no props", () => {
     expect(forSale).toHaveLength(2);
     for (const house of forSale) {
-      expect(defaultHouseStatus(house)).toEqual({ litWindows: 0, isDark: true, note: null, tag: null });
+      expect(defaultHouseStatus(house)).toEqual({
+        litWindows: 0,
+        softWindows: 0,
+        isDark: true,
+        note: null,
+        tag: null,
+      });
       for (const window of house.windows.filter((candidate) => !contains(house.forSaleBoard!, candidate))) {
         expect(coloursIn(village, glassOfWindow(house.build, window)), house.name).not.toContain(WINDOW_LIGHT);
       }

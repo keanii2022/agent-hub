@@ -75,8 +75,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** step 6.
   - **Out of scope:** reacting to the feed (step 8); insides of houses (step 13).
 
-- [ ] **Step 8: The village comes alive from the feed** (part 7)
-  - **Status:** current
+- [x] **Step 8: The village comes alive from the feed** (part 7)
+  - **Status:** done
   - **Goal:** Houses react to the hub's record. Windows glow when an agent is working. The number of residents follows the feed, and can change. A house with no news for a while goes dark with a plain "no news" note, and one broken project never stops the others (H9). Every house on demo data shows a DEMO tag (H10).
   - **Done when:** playing the demo makes windows glow and go dark on schedule; changing the agent count in a script changes the residents; a house whose feed fails goes dark while the others keep running; the DEMO tag is visible; tests check the village state, not just pixels.
   - **Scope:** `lib/village/state/` (feed to village state), house drawing updates, `tests/`, `e2e/`.
@@ -84,7 +84,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** anyone walking around; the desk screen.
 
 - [ ] **Step 9: The manager's rounds** (part 7)
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** The manager character walks the paths from the desk to each house in turn, knocks, waits, moves on, and walks back to the desk. The route comes from the house list, so a new house joins automatically. At this step nothing is handed over yet.
   - **Done when:** the manager visits every occupied house in order and returns; for-sale houses are skipped; a test shows a new house joins the route with no code change.
   - **Scope:** `lib/village/characters/manager`, route logic, `tests/`.

@@ -2,6 +2,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { palette, type ColourName } from "../lib/village/engine";
 import { glassOfWindow, signStyles, villageHouses } from "../lib/village/houses";
 import type { Rect } from "../lib/village/plaza";
+import { expectTheFrozenVillage } from "./frozen-hub";
 
 // Paused at a known moment, the village always paints the same frame.
 const FIXED_TIME_MS = 4200;
@@ -13,6 +14,7 @@ async function openVillage(page: Page, query: string): Promise<Locator> {
   await page.goto(`/${query}`);
   const canvas = page.getByRole("img", { name: /plaza at dusk/i });
   await expect(canvas).toHaveAttribute("data-pixel-scale", "2");
+  await expectTheFrozenVillage(canvas);
   return canvas;
 }
 

@@ -17,10 +17,36 @@ export function hubDatabasePath(environment: Environment = process.env): string 
   return chosen === undefined || chosen.trim() === "" ? HUB_DATABASE_PATH : chosen;
 }
 
+export const HUB_FROZEN_AT_VARIABLE = "HUB_FROZEN_AT";
+
+const UTC_MOMENT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
+
+/**
+ * The moment the hub is frozen at, or null when it runs live. A frozen hub
+ * plays the demo up to that moment once and then never moves on, so a browser
+ * test sees the very same village on every run.
+ */
+export function hubFrozenAt(environment: Environment = process.env): Date | null {
+  const chosen = environment[HUB_FROZEN_AT_VARIABLE];
+  if (chosen === undefined || chosen.trim() === "") return null;
+  const moment = new Date(chosen);
+  if (!UTC_MOMENT.test(chosen) || Number.isNaN(moment.getTime())) {
+    throw new Error(
+      `${HUB_FROZEN_AT_VARIABLE} is "${chosen}", which isn't a time the hub can read. It has to look like 2026-10-05T14:07:30Z.`,
+    );
+  }
+  return moment;
+}
+
+const neverTicks: DemoTimer = () => () => {};
+
 export type DemoHub = {
   databasePath: string;
   store: HubStore;
   player: RunningDemoPlayer;
+  /** The hub's own clock: the real time, or the one frozen moment. Everything that answers "as of now" asks here. */
+  now: DemoClock;
+  isFrozen: boolean;
 };
 
 export type DemoHubOptions = {
@@ -40,22 +66,26 @@ const holder = globalThis as HubHolder;
 /**
  * The one hub of this server process. The first call opens the record, fills
  * in the recent past and starts the player; every later call gets the same hub
- * back, and its options are ignored.
+ * back, and its options are ignored. With `HUB_FROZEN_AT` set, the clock stays
+ * on that moment and the player never ticks.
  */
 export function demoHub(options: DemoHubOptions = {}): DemoHub {
   const running = holder[RUNNING_HUB];
   if (running !== undefined) return running;
 
+  const frozenAt = hubFrozenAt();
+  const isFrozen = frozenAt !== null;
+  const now = options.now ?? (isFrozen ? () => frozenAt : () => new Date());
   const databasePath = options.databasePath ?? hubDatabasePath();
   const store = openHubStore(databasePath);
   try {
     const player = startDemoPlayer({
       store,
       scripts: options.scripts,
-      now: options.now,
-      timer: options.timer,
+      now,
+      timer: options.timer ?? (isFrozen ? neverTicks : undefined),
     });
-    const hub = { databasePath, store, player };
+    const hub = { databasePath, store, player, now, isFrozen };
     holder[RUNNING_HUB] = hub;
     return hub;
   } catch (problem) {

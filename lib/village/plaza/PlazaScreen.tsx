@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { SCREEN_HEIGHT, SCREEN_WIDTH, createClock, palette, startScreen } from "../engine";
 import { drawVillage } from "../houses/draw";
-import { describeHouses } from "../houses/village";
+import { describeHouses, villageHouses } from "../houses/village";
+import { describeVillageNews, statusOfVillage, type VillageNews } from "../state/house-status";
+import { watchVillageState } from "../state/watch";
 import type { FixedFrame } from "./frameQuery";
 import { desk } from "./layout";
 import { plazaStateAt } from "./state";
@@ -67,7 +69,19 @@ type PlazaScreenProps = FixedFrame & {
 export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaScreenProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const computerHasFocusRef = useRef(false);
+  // The picture reads the ref on every frame; the words for a screen reader follow the same news as React state.
+  const villageNewsRef = useRef<VillageNews>("loading");
+  const [villageNews, setVillageNews] = useState<VillageNews>("loading");
   const [canvasSize, setCanvasSize] = useState<CanvasSize | null>(null);
+
+  useEffect(
+    () =>
+      watchVillageState((news) => {
+        villageNewsRef.current = news;
+        setVillageNews(news);
+      }),
+    [],
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -77,8 +91,19 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaS
     const screen = startScreen(canvas, {
       clock,
       pixelScale: pixelScale ?? undefined,
-      draw: (surface, timeMs) =>
-        drawVillage(surface, plazaStateAt(timeMs, { computerHasFocus: computerHasFocusRef.current })),
+      draw: (surface, timeMs) => {
+        const news = villageNewsRef.current;
+        drawVillage(
+          surface,
+          plazaStateAt(timeMs, { computerHasFocus: computerHasFocusRef.current }),
+          villageHouses,
+          statusOfVillage(news),
+        );
+        // Written in the same frame as the picture, so whoever reads the mark
+        // (a browser test, say) can trust the picture already shows that news.
+        if (typeof news === "string") delete canvas.dataset.villageAsOf;
+        else canvas.dataset.villageAsOf = news.asOf;
+      },
     });
 
     // The button over the computer is laid out in parts of the canvas, so it
@@ -116,7 +141,7 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaS
         <canvas
           ref={canvasRef}
           role="img"
-          aria-label={`The plaza at dusk. The human sits at his desk in the middle, typing at his computer. ${describeHouses()}`}
+          aria-label={`The plaza at dusk. The human sits at his desk in the middle, typing at his computer. ${describeHouses()} ${describeVillageNews(villageNews)}`.trim()}
         />
         <div style={overlayStyle}>
           <button

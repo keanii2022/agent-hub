@@ -1,4 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
+import { FROZEN_HUB_MOMENT } from "./e2e/frozen-hub";
+import { HUB_DATABASE_PATH_VARIABLE, HUB_FROZEN_AT_VARIABLE } from "./lib/demo/hub";
+import { IN_MEMORY_DATABASE } from "./lib/store/database";
 
 // HUB_PORT lets two checkouts run their browser tests at the same time.
 const port = process.env.HUB_PORT ?? "4040";
@@ -12,5 +15,12 @@ export default defineConfig({
     command: `npm run hub -- -p ${port}`,
     url: hubUrl,
     reuseExistingServer: true,
+    // A live hub adds lines for the real time, so no two runs would see the
+    // same village. The tests' own hub stays on one moment, and keeps its
+    // record in memory so nothing is left behind and no run sees another's.
+    env: {
+      [HUB_FROZEN_AT_VARIABLE]: FROZEN_HUB_MOMENT,
+      [HUB_DATABASE_PATH_VARIABLE]: IN_MEMORY_DATABASE,
+    },
   },
 });

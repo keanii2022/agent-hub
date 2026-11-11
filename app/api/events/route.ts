@@ -6,8 +6,8 @@ export const dynamic = "force-dynamic";
 
 export function GET(request: Request): Response {
   try {
-    const { store } = demoHub();
-    const answer = readRecentEvents(store, new URL(request.url).searchParams, new Date());
+    const { store, now } = demoHub();
+    const answer = readRecentEvents(store, new URL(request.url).searchParams, now());
     return Response.json(answer.body, { status: answer.status });
   } catch (problem) {
     console.error(problem);
