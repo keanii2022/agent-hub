@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { SCREEN_HEIGHT, SCREEN_WIDTH, createClock, palette, startScreen } from "../engine";
-import { drawPlaza } from "./draw";
+import { drawVillage } from "../houses/draw";
+import { describeHouses } from "../houses/village";
 import type { FixedFrame } from "./frameQuery";
 import { desk } from "./layout";
 import { plazaStateAt } from "./state";
@@ -77,7 +78,7 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaS
       clock,
       pixelScale: pixelScale ?? undefined,
       draw: (surface, timeMs) =>
-        drawPlaza(surface, plazaStateAt(timeMs, { computerHasFocus: computerHasFocusRef.current })),
+        drawVillage(surface, plazaStateAt(timeMs, { computerHasFocus: computerHasFocusRef.current })),
     });
 
     // The button over the computer is laid out in parts of the canvas, so it
@@ -115,7 +116,7 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaS
         <canvas
           ref={canvasRef}
           role="img"
-          aria-label="The plaza at dusk. The human sits at his desk in the middle, typing at his computer."
+          aria-label={`The plaza at dusk. The human sits at his desk in the middle, typing at his computer. ${describeHouses()}`}
         />
         <div style={overlayStyle}>
           <button

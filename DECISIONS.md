@@ -125,4 +125,22 @@ Template:
 - The walk through the square runs under the desk. Walkers (step 9) have to go round it on the paving.
 - House signs will be tight: "approval-desk" is 78 pixels wide in the pixel font and a lot is 80.
 - The screen-reader description of the picture is fixed text for now; the live summary is step 15.
-- The owner has not judged the look yet.
+- The owner has not judged the look yet. (Later the same week the owner said the layout is fine for now.)
+
+## Step 7: Houses and signs (2026-11-11)
+
+**Built:** Houses stand around the plaza from one list (`config/houses.ts`): approval-desk and the team house on the upper street, and two for-sale houses on the lower street. Each project house has a neon sign on its roof with its name, and props outside: a rubber stamp and ticked paperwork for approval-desk, a cardboard box and a box cutter for the team house. For-sale houses are dark cottages with a "FOR SALE" board. Adding a house is one entry in the list, and a test proves it with a fifth house.
+**Decided:**
+- Q5: approval-desk first, then the team house. The team house is called boxcutter for now; the owner has not confirmed the name, and it is still written in one place. Two houses stand for sale until the owner picks the next projects. Scripted activity is always marked DEMO.
+- The DEMO tag shows already, from the list's "demo or real" field, so a lit window under a real project's name is never unmarked (H10). Step 8 only has to keep it.
+- The list is a TypeScript file so it can take the team house's name from its one place instead of retyping it.
+- A sign holds up to 13 letters on one line, so "approval-desk" stays whole; its board hangs a few pixels over the lot. Longer names break in two at a hyphen or space.
+- The glow is a dimmer colour around the letters plus a speckled halo, with bulbs that chase and a letter that buzzes out now and then, all worked out from the clock.
+- How a house is built (brick office, timber workshop, plaster cottage) is its own list field, apart from its sign, so houses differ in more than the sign.
+- Each house is drawn from a small status (lit windows, dark or not, a note, a tag) with defaults for now. Step 8 fills it from the feed.
+- This step was cut off once by a usage limit and picked up again from its saved files.
+**Left for later:**
+- Houses are not clickable yet (step 13). Their click areas are ready.
+- The list has no agent cards or feed locations yet (Q2, Q4); the first step that needs them adds them.
+- A plaza lamp post stands just left of the team house's door and its glow speckles that wall. Moving it is the owner's call.
+- A third sign style ("pink star") exists but no house uses it yet.

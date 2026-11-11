@@ -67,8 +67,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** step 5.
   - **Out of scope:** houses, the manager, the desk screen, any feed data.
 
-- [ ] **Step 7: Houses and signs** (part 7)
-  - **Status:** current
+- [x] **Step 7: Houses and signs** (part 7)
+  - **Status:** done
   - **Goal:** Houses placed around the plaza from one list (project name, sign style, outside props). Each has a Vegas-style neon sign with its name, in a style that fits the project, and props that fit it (for example a box and a box cutter left outside for boxcutter). A path runs from the desk to every house. Houses can be for sale (empty, with a sign). Adding a house means adding one entry to the list, plus props if they are new. Settle Q5.
   - **Done when:** the plaza shows the approval-desk house, a team house, and two for-sale houses, each reached by a path; each sign shows its name; a test adds a fifth house by editing only the list.
   - **Scope:** `lib/village/houses/`, `config/houses`, `tests/`, `e2e/`.
@@ -76,7 +76,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** reacting to the feed (step 8); insides of houses (step 13).
 
 - [ ] **Step 8: The village comes alive from the feed** (part 7)
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** Houses react to the hub's record. Windows glow when an agent is working. The number of residents follows the feed, and can change. A house with no news for a while goes dark with a plain "no news" note, and one broken project never stops the others (H9). Every house on demo data shows a DEMO tag (H10).
   - **Done when:** playing the demo makes windows glow and go dark on schedule; changing the agent count in a script changes the residents; a house whose feed fails goes dark while the others keep running; the DEMO tag is visible; tests check the village state, not just pixels.
   - **Scope:** `lib/village/state/` (feed to village state), house drawing updates, `tests/`, `e2e/`.
