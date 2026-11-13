@@ -176,6 +176,7 @@ export function DeskScreen() {
         Your desk
       </h1>
       <p className="desk-lead">Everything your agents are waiting on you for, and everything they have done.</p>
+      <p className="desk-hint"><Link href="/clipboard">Open the clipboard</Link> to see how far each project&apos;s plan has got.</p>
       {showsDemo && (
         <p className="desk-note">
           <span className="desk-tag desk-tag-demo">DEMO</span> marks a scripted example. It is not real activity.

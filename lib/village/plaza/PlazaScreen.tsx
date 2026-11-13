@@ -1,7 +1,17 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { describeManagersRound } from "../characters/manager";
+import {
+  CLIPBOARD_KEY,
+  CLIPBOARD_NAME,
+  CLIPBOARD_ROUTE,
+  clipboardBounds,
+  clipboardOnTheDesk,
+  clipboardReach,
+  opensTheClipboard,
+} from "../clipboard";
 import {
   agentsAwayFrom,
   deliveryAfter,
@@ -18,6 +28,7 @@ import { describeHouses, villageHouses } from "../houses/village";
 import { useHouseInside } from "../interiors/HouseInside";
 import { describeVillageNews, statusOfVillage, type VillageNews } from "../state/house-status";
 import { watchVillageState } from "../state/watch";
+import { drawFocusMark } from "./draw";
 import type { FixedFrame } from "./frameQuery";
 import { desk } from "./layout";
 import { plazaStateAt } from "./state";
@@ -71,6 +82,25 @@ const computerButtonStyle: CSSProperties = {
   outline: "none",
 };
 
+const clipboardButtonStyle: CSSProperties = {
+  ...computerButtonStyle,
+  left: partOfScreen(clipboardReach.x, SCREEN_WIDTH),
+  top: partOfScreen(clipboardReach.y, SCREEN_HEIGHT),
+  width: partOfScreen(clipboardReach.width, SCREEN_WIDTH),
+  height: partOfScreen(clipboardReach.height, SCREEN_HEIGHT),
+};
+
+const clipboardHintStyle: CSSProperties = { margin: "0 0 0 20px", color: palette.mist, fontSize: 14 };
+
+const clipboardKeyStyle: CSSProperties = {
+  padding: "0 6px",
+  border: `1px solid ${palette.stone}`,
+  borderRadius: 3,
+  color: palette.cream,
+  fontFamily: "ui-monospace, Menlo, Consolas, monospace",
+  fontSize: 12,
+};
+
 type CanvasSize = { width: number; height: number };
 
 type PlazaScreenProps = FixedFrame & {
@@ -86,6 +116,8 @@ type PlazaScreenProps = FixedFrame & {
 export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress, papersSeenBefore }: PlazaScreenProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const computerHasFocusRef = useRef(false);
+  const clipboardHasFocusRef = useRef(false);
+  const router = useRouter();
   // The picture reads the ref on every frame; the words for a screen reader follow the same news as React state.
   const villageNewsRef = useRef<VillageNews>("loading");
   const [villageNews, setVillageNews] = useState<VillageNews>("loading");
@@ -104,6 +136,14 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress, papersSe
       }),
     [],
   );
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => {
+      if (opensTheClipboard(event)) router.push(CLIPBOARD_ROUTE);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [router]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -126,9 +166,10 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress, papersSe
           }),
           villageHouses,
           statusOfVillage(news, (project) => agentsAwayFrom(delivery, project)),
-          deliveryDrawables(scene),
+          [...deliveryDrawables(scene), clipboardOnTheDesk],
         );
         drawDeliveryAir(surface, scene);
+        if (clipboardHasFocusRef.current) drawFocusMark(surface, clipboardBounds);
         Object.assign(canvas.dataset, deliveryMarksOf(delivery));
         houseInside.paint(surface, news, timeMs);
         // Written in the same frame as the picture, so whoever reads the mark
@@ -168,6 +209,9 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress, papersSe
     <main style={pageStyle}>
       <div style={barStyle}>
         <h1 style={headingStyle}>Agent Hub</h1>
+        <p style={clipboardHintStyle}>
+          Press <kbd style={clipboardKeyStyle}>{CLIPBOARD_KEY}</kbd> for the clipboard
+        </p>
       </div>
       <div style={roomStyle}>
         <canvas
@@ -195,6 +239,20 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress, papersSe
             }}
           />
           {houseInside.controls}
+          <button
+            type="button"
+            aria-label={CLIPBOARD_NAME}
+            aria-keyshortcuts={CLIPBOARD_KEY}
+            hidden={houseInside.openHouse !== null}
+            style={clipboardButtonStyle}
+            onClick={() => router.push(CLIPBOARD_ROUTE)}
+            onFocus={(event) => {
+              clipboardHasFocusRef.current = event.currentTarget.matches(":focus-visible");
+            }}
+            onBlur={() => {
+              clipboardHasFocusRef.current = false;
+            }}
+          />
         </div>
       </div>
     </main>

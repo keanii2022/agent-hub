@@ -147,8 +147,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** all earlier steps.
   - **Out of scope:** new features; pushing to GitHub (the owner does that).
 
-- [ ] **Step 17: Clipboard on the human desk**
-  - **Status:** current
+- [x] **Step 17: Clipboard on the human desk**
+  - **Status:** done
   - **Goal:** A clipboard on the human desk that shows the owner's build board: one bar per project with done/total and the current step, read from each project's PLAN.md. The hub only reads; nothing on the clipboard changes a plan.
   - **Done when:** the clipboard opens from the desk by click and by keyboard; its numbers match the PLAN.md files in a test with a scripted plan folder.
   - **Scope:** `lib/village/clipboard.ts`, `app/`, `e2e/`.
@@ -211,6 +211,11 @@ Choices made for the owner during the parallel run. Each is a best guess that ca
 - **Step 14: if the manager is already at that door,** he takes the urgent paperwork himself and the agent stays in.
 - **Step 14: two urgent agents go one at a time,** first heard first. One agent with two urgent items carries both in one walk.
 - **Step 14: only the agent that sent the item walks,** and only while the feed shows it at home. Otherwise the manager brings it on his next call.
+- **Step 17: the C key opens the clipboard** from the plaza; the top bar says "Press C for the clipboard".
+- **Step 17: the page is called "Your build board"** at `/clipboard`.
+- **Step 17: each bar is a row of squares,** one per step: green for done, yellow for the current step, dark for still to come, with "N of M steps done" and "Now on step X: name" beside it.
+- **Step 17: which plans show.** Set `HUB_PLANS_FOLDER` to a folder whose subfolders each hold a `PLAN.md`. Unset, the board shows only this hub's own plan.
+- **Step 17: the clipboard on the pixel desk is small** and its right half covers the end of the keyboard.
 - **Step 18: not ticked.** The translator is built and tested, but no approval-desk database holds ten logbook entries (the seeded one has none, its prepared queue has three), so "plays its last ten" is proven only on invented rows. Making real entries means running approval-desk, which is the owner's call.
 - **Step 18: old real entries are shown honestly.** Each line keeps its own time, so a house fed by old entries is dark with "no news" and no DEMO tag. Times are never moved to look live.
 - **Step 18: a real house waits one hour before going dark** (demo houses wait five minutes).

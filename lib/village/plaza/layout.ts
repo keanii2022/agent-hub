@@ -95,7 +95,7 @@ export const desk = {
   /** The middle of the bottom of a mark floating above the computer. */
   markSpot: fromDeskCorner(39, -3),
   /** The middle of the bottom of something small lying at the front of the desk. */
-  clipboardSpot: fromDeskCorner(27, 16),
+  clipboardSpot: fromDeskCorner(31, 17),
 } as const;
 
 const LOT_WIDTH = 80;

@@ -229,6 +229,19 @@ Template:
 - Words, looks and who-goes-first were picked in the parallel run; see "Calls to review" in `PLAN.md`.
 **Left for later:** nothing for this step.
 
+## Step 17: Clipboard on the human desk (2026-11-12)
+
+**Built:** A small clipboard on the pixel desk that the mouse and the keyboard both reach (and the C key from the plaza). It opens the build board (`/clipboard`), a normal web page in the desk's dusk look: one row per project with a bar of done steps out of the total, the numbers as text, and the name of the current step. The hub only reads the plans.
+**Decided:**
+- Reading a plan is one small function from a `PLAN.md`'s text to total, done and current step. It understands both plan formats the owner uses (checkbox steps and numbered heading steps) and counts only real steps.
+- Where the plans are is a setting (`HUB_PLANS_FOLDER`), never a path written into the repo. Unset, the board shows this hub's own plan only.
+- The reader opens only `PLAN.md` at the top of each project folder, never follows links out of the folder, never reads anything named `private`, and never writes. A test shows the files are unchanged after a read.
+- A project whose plan is missing or can't be understood says so in plain words and the others still show.
+- Browser tests read invented plans kept in the repo (`e2e/plans/`), never the owner's own projects.
+- Finished in a second sitting from the first agent's saved work, after a usage limit cut it off.
+- The key, the page's name and the bar's look were picked in the parallel run; see "Calls to review" in `PLAN.md`.
+**Left for later:** the README does not mention the setting yet (step 16).
+
 ## Step 18: First real house: approval-desk (2026-11-12, not finished)
 
 **Built:** A read-only translator (`lib/feed/translators/approval-desk.ts`) that turns approval-desk's logbook rows into checked feed lines marked real, each keeping its own time. When the hub is started with `APPROVAL_DESK_DATABASE` set, it feeds the last ten entries into its record, then anything newer every five seconds; the house loses its DEMO tag and its scripted day is not played. Unset, nothing changes.
