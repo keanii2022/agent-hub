@@ -1,3 +1,4 @@
+import { AGENT_HEIGHT, agentLookAt, agentOnLeg, agentSmokeOn, type WalkingAgent } from "../characters/agent";
 import {
   MANAGER_HEIGHT,
   managerOnLeg,
@@ -47,6 +48,8 @@ export type DeliveryScene = {
   /** The mark bobs: true while it is up a pixel. */
   readonly markIsRaised: boolean;
   readonly agentsAtTheDoor: readonly AgentAtTheDoor[];
+  /** Every agent out of its house with its own urgent paperwork, in the order they set off. */
+  readonly walkers: readonly WalkingAgent[];
   readonly speech: readonly SpeechBubble[];
   /** Someone has a hand on the owner's shoulder, so he looks up from his screen. */
   readonly ownerIsBeingTapped: boolean;
@@ -78,7 +81,8 @@ function managerIn(state: DeliveryState, houses: readonly PlacedHouse[]): Manage
 
 function agentAtTheDoorOf(state: DeliveryState, trip: Trip): AgentAtTheDoor[] {
   const leg = trip.legs[trip.onLeg];
-  if (leg.activity === "walking" || leg.atHouse === null) return [];
+  // An agent walking its own paperwork over is itself the one at its door.
+  if (trip.agent !== null || leg.activity === "walking" || leg.atHouse === null) return [];
   return [
     {
       house: leg.atHouse,
@@ -88,7 +92,36 @@ function agentAtTheDoorOf(state: DeliveryState, trip: Trip): AgentAtTheDoor[] {
   ];
 }
 
-function speechOf(state: DeliveryState, trip: Trip, manager: ManagerState): SpeechBubble[] {
+function walkerOf(state: DeliveryState, trip: Trip, houses: readonly PlacedHouse[]): WalkingAgent[] {
+  const home = houses.find((house) => house.project !== null && house.project === trip.project);
+  if (trip.agent === null || !home) return [];
+
+  const leg = trip.legs[trip.onLeg];
+  const msIntoLeg = state.atMs - trip.legStartedAtMs;
+  const carriesPaperwork = leg.paperworkIs === "being carried" && paperworkOf(state, trip.carrier).length > 0;
+  return [
+    {
+      ...agentOnLeg(leg, msIntoLeg),
+      name: trip.agent.name,
+      home,
+      carriesPaperwork,
+      // Its cigarette goes with the paperwork: with nothing left to carry it has nothing lit.
+      smoke: leg.smokes && carriesPaperwork ? agentSmokeOn(leg, msIntoLeg) : [],
+      look: agentLookAt(state.atMs, trip.agent.placeInHouse, trip.agent.isWornOut, carriesPaperwork),
+    },
+  ];
+}
+
+function overTheHeadOf(at: Point, height: number): Point {
+  return { x: Math.round(at.x), y: Math.round(at.y) - height - 1 };
+}
+
+function speechOf(
+  state: DeliveryState,
+  trip: Trip,
+  manager: ManagerState,
+  walkers: readonly WalkingAgent[],
+): SpeechBubble[] {
   const leg = trip.legs[trip.onLeg];
   // Paperwork that stopped waiting on the way leaves nothing to talk about.
   if (!leg.says || paperworkOf(state, trip.carrier).length === 0) return [];
@@ -97,14 +130,10 @@ function speechOf(state: DeliveryState, trip: Trip, manager: ManagerState): Spee
     const agent = doorAgentSpot(leg.atHouse);
     return [{ words: leg.says.words, over: { x: agent.x, y: agent.y - DOOR_AGENT_HEIGHT - 1 } }];
   }
-  // Step 14's carriers will have places of their own; today the only carrier is the manager.
-  if (trip.carrier !== MANAGER) return [];
-  return [
-    {
-      words: leg.says.words,
-      over: { x: Math.round(manager.at.x), y: Math.round(manager.at.y) - MANAGER_HEIGHT - 1 },
-    },
-  ];
+  if (trip.carrier === MANAGER) return [{ words: leg.says.words, over: overTheHeadOf(manager.at, MANAGER_HEIGHT) }];
+  // A carrier with no picture has no head for a bubble to hang over.
+  const walker = walkers.find((agent) => agent.name === trip.agent?.name && agent.home.project === trip.project);
+  return walker ? [{ words: leg.says.words, over: overTheHeadOf(walker.at, AGENT_HEIGHT) }] : [];
 }
 
 export function deliverySceneOf(
@@ -112,13 +141,15 @@ export function deliverySceneOf(
   houses: readonly PlacedHouse[] = villageHouses,
 ): DeliveryScene {
   const manager = managerIn(state, houses);
+  const walkers = state.trips.flatMap((trip) => walkerOf(state, trip, houses));
   return {
     manager,
     stack: paperworkOnTheDesk(state),
     markIsShowing: markIsShowing(state),
     markIsRaised: Math.floor(state.atMs / MARK_BOB_MS) % 2 === 1,
     agentsAtTheDoor: state.trips.flatMap((trip) => agentAtTheDoorOf(state, trip)),
-    speech: state.trips.flatMap((trip) => speechOf(state, trip, manager)),
+    walkers,
+    speech: state.trips.flatMap((trip) => speechOf(state, trip, manager, walkers)),
     ownerIsBeingTapped: state.trips.some((trip) => trip.legs[trip.onLeg].activity === "tapping the shoulder"),
   };
 }

@@ -123,8 +123,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** step 8.
   - **Out of scope:** approval-desk's detailed scene (Stage 2); agents walking out (step 14).
 
-- [ ] **Step 14: Urgent walkers** (part 7)
-  - **Status:** current
+- [x] **Step 14: Urgent walkers** (part 7)
+  - **Status:** done
   - **Goal:** When the feed marks an item urgent, the agent leaves the house, walks the path smoking, taps the owner's shoulder, and drops its paperwork without waiting for the manager. Settle Q8.
   - **Done when:** an urgent scripted event triggers the walk; non-urgent items still go through the manager; the stack and exclamation mark behave as in step 10; a house shows that its agent is away while walking; tests check the sequence state.
   - **Scope:** `lib/village/characters/` and village state, `tests/`, `e2e/`.
@@ -205,6 +205,12 @@ Choices made for the owner during the parallel run. Each is a best guess that ca
 - **Step 13: long text is cut.** A card shows about three to six lines; the rest ends in "...". In a full room an agent name over twelve letters is cut too.
 - **Step 13: empty-room words.** "Nobody lives here yet." / "Nobody is home right now." / "Nothing has been heard from this house for a while." / "This house's news could not be read."
 - **Step 13: door names** read "Open the approval-desk house" and "Open the house for sale, left of the lower street".
+- **Step 14: the walker's words.** At the shoulder it says "master, this one can't wait". At its own door it reuses "oh snap, master has to see this".
+- **Step 14: how a house shows its agent is away.** The door stands open and that agent's window goes dark; inside, its station is empty with an "away" sign.
+- **Step 14: the walker** is the same robot as inside, in its own colour, with a red bulb flashing on its antenna, and it walks faster than the manager.
+- **Step 14: if the manager is already at that door,** he takes the urgent paperwork himself and the agent stays in.
+- **Step 14: two urgent agents go one at a time,** first heard first. One agent with two urgent items carries both in one walk.
+- **Step 14: only the agent that sent the item walks,** and only while the feed shows it at home. Otherwise the manager brings it on his next call.
 - **Step 18: not ticked.** The translator is built and tested, but no approval-desk database holds ten logbook entries (the seeded one has none, its prepared queue has three), so "plays its last ten" is proven only on invented rows. Making real entries means running approval-desk, which is the owner's call.
 - **Step 18: old real entries are shown honestly.** Each line keeps its own time, so a house fed by old entries is dark with "no news" and no DEMO tag. Times are never moved to look live.
 - **Step 18: a real house waits one hour before going dark** (demo houses wait five minutes).

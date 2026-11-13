@@ -1,4 +1,5 @@
-import { drawManagersSmoke, managerDrawables } from "../characters/manager";
+import { walkingAgentDrawables } from "../characters/agent";
+import { drawManagersSmoke, drawSmoke, managerDrawables } from "../characters/manager";
 import {
   drawSprite,
   drawText,
@@ -174,7 +175,7 @@ function drawAgentAtTheDoor(surface: Surface, agent: AgentAtTheDoor): void {
 /**
  * Everything of the handover that stands in the plaza, to hand to `drawVillage`
  * as who is out: the manager, an agent at a door with the door open behind it,
- * and the stack on the desk.
+ * every agent walking its own paperwork over, and the stack on the desk.
  */
 export function deliveryDrawables(scene: DeliveryScene): Drawable[] {
   return [
@@ -184,6 +185,11 @@ export function deliveryDrawables(scene: DeliveryScene): Drawable[] {
       { footY: agent.house.footY, draw: (surface: Surface) => drawOpenDoor(surface, agent.house) },
       { footY: agent.at.y, draw: (surface: Surface) => drawAgentAtTheDoor(surface, agent) },
     ]),
+    ...scene.walkers.flatMap((walker) => [
+      // It left in a hurry: its door stands open until it is back, which shows from across the plaza that it is out.
+      { footY: walker.home.footY, draw: (surface: Surface) => drawOpenDoor(surface, walker.home) },
+      ...walkingAgentDrawables(walker),
+    ]),
     // Same foot as the desk, and later in the list: it stands on the table.
     { footY: desk.footY, draw: (surface: Surface) => drawStack(surface, scene.stack) },
   ];
@@ -192,6 +198,7 @@ export function deliveryDrawables(scene: DeliveryScene): Drawable[] {
 /** What floats over the whole village: smoke, the mark over the computer and anything being said. Draw it last. */
 export function drawDeliveryAir(surface: Surface, scene: DeliveryScene): void {
   drawManagersSmoke(surface, scene.manager);
+  for (const walker of scene.walkers) drawSmoke(surface, walker.smoke);
   if (scene.markIsShowing) drawDeskMark(surface, scene.markIsRaised);
   for (const bubble of scene.speech) drawSpeechBubble(surface, bubble);
 }

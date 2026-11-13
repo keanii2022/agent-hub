@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { describeManagersRound } from "../characters/manager";
 import {
+  agentsAwayFrom,
   deliveryAfter,
   deliveryDrawables,
   deliveryFollowing,
@@ -89,9 +90,11 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress, papersSe
   const villageNewsRef = useRef<VillageNews>("loading");
   const [villageNews, setVillageNews] = useState<VillageNews>("loading");
   const [canvasSize, setCanvasSize] = useState<CanvasSize | null>(null);
-  const houseInside = useHouseInside(villageHouses, villageNews, canvasRef);
   // What has been carried to the desk so far: stepped on every frame, and by the press that opens the desk.
   const deliveryRef = useRef(deliveryStartingAt(fixedTimeMs ?? 0));
+  const houseInside = useHouseInside(villageHouses, villageNews, canvasRef, {
+    awayAgentsOf: (project) => agentsAwayFrom(deliveryRef.current, project),
+  });
 
   useEffect(
     () =>
@@ -122,7 +125,7 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress, papersSe
             ownerIsBeingTapped: scene.ownerIsBeingTapped,
           }),
           villageHouses,
-          statusOfVillage(news),
+          statusOfVillage(news, (project) => agentsAwayFrom(delivery, project)),
           deliveryDrawables(scene),
         );
         drawDeliveryAir(surface, scene);

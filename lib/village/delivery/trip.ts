@@ -1,6 +1,8 @@
+import { agentWalkLeg, routeThrough } from "../characters/agent";
 import { managerHome, walkLeg, type RoundLeg, type WalkLeg } from "../characters/manager";
 import type { PlacedHouse } from "../houses/place";
-import { desk } from "../plaza/layout";
+import { desk, type Point } from "../plaza/layout";
+import { routeBetween, wayRoundTheDesk } from "../routes";
 
 // One trip to the desk with paperwork, as a list of legs. Each leg says where
 // the paperwork is while it lasts, so whoever follows the trip never has to
@@ -101,6 +103,106 @@ export function legsOfTheManagersTrip(house: PlacedHouse, thenOn: WalkLeg): Trip
     },
     {
       ...walkLeg(desk.dropOffSpot, goesOnTo, thenOn.doing, thenOn.headingFor),
+      paperworkIs: "on the desk",
+      ...quietly,
+    },
+  ];
+}
+
+/** What an agent says with its hand on the owner's shoulder. Not the owner's words: written to sit beside them. */
+export const URGENT_TAP_WORDS = "master, this one can't wait";
+
+export const STEP_OUT_MS = 1400;
+export const GO_BACK_IN_MS = 500;
+
+/**
+ * Where an agent stands to tap the owner: on the same lane as the manager's
+ * place behind the chair, a few rows further back, so that when both are
+ * there its head still shows over his hat. Its arm reaches the rest of the way.
+ */
+export const agentTapSpot: Point = { x: desk.visitorSpot.x, y: desk.visitorSpot.y - 8 };
+
+/** The far corner of the way round the desk, behind it: an agent goes on that way, clear of the manager's place. */
+const behindTheFarEndOfTheDesk: Point = { x: desk.dropOffSpot.x, y: wayRoundTheDesk.y };
+
+/**
+ * An agent's own trip with urgent paperwork: out of its door saying the
+ * agent's line, along the paths to the desk smoking, a tap on the owner's
+ * shoulder, round the desk, the paperwork onto the stack, and home again.
+ */
+export function legsOfAnAgentsWalk(house: PlacedHouse): TripLeg[] {
+  const atTheDoor = { atHouse: house, at: house.doorstep } as const;
+  const atTheStack = { atHouse: null, at: desk.dropOffSpot, facing: "left" } as const;
+
+  return [
+    {
+      ...atTheDoor,
+      facing: "down",
+      activity: "stepping out",
+      doing: `stepping out of ${house.name} with urgent paperwork`,
+      lastsMs: STEP_OUT_MS,
+      paperworkIs: "being carried",
+      smokes: false,
+      says: { who: "the carrier", words: HANDOVER_WORDS },
+    },
+    {
+      ...agentWalkLeg(
+        routeBetween(house.doorstep, agentTapSpot),
+        `walking urgent paperwork from ${house.name} to the desk`,
+        null,
+      ),
+      paperworkIs: "being carried",
+      smokes: true,
+      says: null,
+    },
+    {
+      atHouse: null,
+      at: agentTapSpot,
+      facing: "right",
+      activity: "tapping the shoulder",
+      doing: "tapping the owner on the shoulder",
+      lastsMs: SHOULDER_TAP_MS,
+      paperworkIs: "being carried",
+      smokes: true,
+      says: { who: "the carrier", words: URGENT_TAP_WORDS },
+    },
+    {
+      ...agentWalkLeg(
+        routeThrough([...routeBetween(agentTapSpot, behindTheFarEndOfTheDesk).points, desk.dropOffSpot]),
+        "walking round the desk with the paperwork",
+        null,
+      ),
+      paperworkIs: "being carried",
+      smokes: true,
+      says: null,
+    },
+    {
+      ...atTheStack,
+      activity: "putting paperwork down",
+      doing: "putting the paperwork on the desk",
+      lastsMs: PUT_DOWN_MS,
+      paperworkIs: "being carried",
+      ...quietly,
+    },
+    {
+      ...atTheStack,
+      activity: "standing back",
+      doing: "standing back from the desk",
+      lastsMs: STAND_BACK_MS,
+      paperworkIs: "on the desk",
+      ...quietly,
+    },
+    {
+      ...agentWalkLeg(routeBetween(desk.dropOffSpot, house.doorstep), `walking back to ${house.name}`, house),
+      paperworkIs: "on the desk",
+      ...quietly,
+    },
+    {
+      ...atTheDoor,
+      facing: "up",
+      activity: "going back in",
+      doing: `going back into ${house.name}`,
+      lastsMs: GO_BACK_IN_MS,
       paperworkIs: "on the desk",
       ...quietly,
     },

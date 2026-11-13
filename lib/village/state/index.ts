@@ -3,6 +3,7 @@ export {
   describeVillageNews,
   houseStatusFrom,
   statusOfVillage,
+  type AwayAgentsOf,
   type VillageNews,
 } from "./house-status";
 export { VILLAGE_LOOKS_BACK_MS, readVillageState, type VillageReading } from "./read";

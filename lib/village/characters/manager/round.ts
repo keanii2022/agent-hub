@@ -43,7 +43,10 @@ export type ManagerActivity =
   | "taking paperwork"
   | "tapping the shoulder"
   | "putting paperwork down"
-  | "standing back";
+  | "standing back"
+  // Only an agent walking its own urgent paperwork over does these (`lib/village/characters/agent`).
+  | "stepping out"
+  | "going back in";
 
 export const SHOULDER_TAP_EVERY_MS = 400;
 /** How long his hand stays on the owner's shoulder at each tap. */

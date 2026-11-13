@@ -4,8 +4,10 @@ import type { ProjectState, VillageState } from "./village-state";
 
 // From what the village believes to what each house shows. A house shows one
 // window per agent at home: bright while that agent works, soft while it is in
-// but between jobs. A house has only so many windows, so the count on the wall
-// stops there; the state itself always has the true number.
+// but between jobs. An agent who has walked out to the desk has turned its
+// lamp off: its window is dark until it is back. A house has only so many
+// windows, so the count on the wall stops there; the state itself always has
+// the true number.
 
 /** The words hung on a house the hub has heard nothing from. */
 export const NO_NEWS_NOTE = "no news";
@@ -25,7 +27,18 @@ function dark(house: PlacedHouse, project: ProjectState | null, note: string | n
   return { litWindows: 0, softWindows: 0, isDark: true, note, tag: tagOf(house, project) };
 }
 
-export function houseStatusFrom(house: PlacedHouse, news: VillageNews): HouseStatus {
+/** The names of a project's agents who are out of its house right now. */
+export type AwayAgentsOf = (project: string) => readonly string[];
+
+/**
+ * What one house shows. `awayAgents` names the agents who live there but are
+ * out walking right now: they light no window.
+ */
+export function houseStatusFrom(
+  house: PlacedHouse,
+  news: VillageNews,
+  awayAgents: readonly string[] = [],
+): HouseStatus {
   if (house.isForSale) return { litWindows: 0, softWindows: 0, isDark: true, note: null, tag: null };
   // Nothing is known yet, so nothing is claimed: no light, and no note either.
   if (news === "loading") return dark(house, null, null);
@@ -33,17 +46,21 @@ export function houseStatusFrom(house: PlacedHouse, news: VillageNews): HouseSta
 
   const project = news.projects.find((state) => state.project === house.project) ?? null;
   if (project === null || project.isDark) return dark(house, project, NO_NEWS_NOTE);
+  const away = project.agents.filter((agent) => awayAgents.includes(agent.name));
+  const litWindows = project.workingCount - away.filter((agent) => agent.isWorking).length;
   return {
-    litWindows: project.workingCount,
-    softWindows: project.agents.length - project.workingCount,
+    litWindows,
+    softWindows: project.agents.length - away.length - litWindows,
     isDark: false,
     note: null,
     tag: tagOf(house, project),
+    ...(away.length > 0 && { agentsAway: away.length }),
   };
 }
 
-export function statusOfVillage(news: VillageNews): StatusOf {
-  return (house) => houseStatusFrom(house, news);
+/** What every house shows. `awayAgentsOf` says who is out of each house; left out, everyone at home is in. */
+export function statusOfVillage(news: VillageNews, awayAgentsOf: AwayAgentsOf = () => []): StatusOf {
+  return (house) => houseStatusFrom(house, news, house.project === null ? [] : awayAgentsOf(house.project));
 }
 
 function counted(count: number, one: string, many: string): string {

@@ -217,6 +217,18 @@ Template:
 - A euro sign in the pixel font.
 - While a house is open, the plaza is still drawn underneath each frame. Wasteful, not visible.
 
+## Step 14: Urgent walkers (2026-11-12)
+
+**Built:** An urgent item that arrives while the page is open sends its own agent out of the door at once. It walks the paths smoking, taps the owner's shoulder, drops its paperwork on the stack and goes home. Ordinary items still wait for the manager. While the agent is out, its house shows it: the door stands open, its window is dark, and its station inside is empty.
+**Decided:**
+- Q8: a line is urgent only when the project itself writes `urgent: true` on it. The hub never works urgency out from the wording, the amount or how long something has waited, and no new feed field was needed.
+- The hub does not guess who walks either: only the agent that sent the line, and only while the feed shows that agent at home. Otherwise the manager brings it on his next call.
+- The walk is one more carrier in the delivery state machine from step 10, so the landing, the stack and the alert mark behave the same.
+- Items already waiting when the page opens stay on the desk from the start, as in step 10.
+- Finished in a second sitting: the first agent was cut off by a usage limit and its saved work was picked up as it was.
+- Words, looks and who-goes-first were picked in the parallel run; see "Calls to review" in `PLAN.md`.
+**Left for later:** nothing for this step.
+
 ## Step 18: First real house: approval-desk (2026-11-12, not finished)
 
 **Built:** A read-only translator (`lib/feed/translators/approval-desk.ts`) that turns approval-desk's logbook rows into checked feed lines marked real, each keeping its own time. When the hub is started with `APPROVAL_DESK_DATABASE` set, it feeds the last ten entries into its record, then anything newer every five seconds; the house loses its DEMO tag and its scripted day is not played. Unset, nothing changes.

@@ -1,7 +1,7 @@
 import { drawSprite, fillRect, setPixel, type Sprite, type Surface } from "../../engine";
 import type { Drawable } from "../../plaza/draw";
 import { desk } from "../../plaza/layout";
-import type { ManagerState } from "./round";
+import type { ManagerState, SmokePuff } from "./round";
 import { managerPictures, managerPoints } from "./sprites";
 
 function pictureFor(manager: ManagerState): Sprite {
@@ -72,10 +72,14 @@ export function managerDrawables(manager: ManagerState): Drawable[] {
   return drawables;
 }
 
-/** His cigarette smoke. It floats over everything, so it is drawn after the plaza's own air. */
-export function drawManagersSmoke(surface: Surface, manager: ManagerState): void {
-  for (const puff of manager.smoke ?? []) {
+/** Cigarette smoke, whoever's it is. It floats over everything, so it is drawn after the plaza's own air. */
+export function drawSmoke(surface: Surface, puffs: readonly SmokePuff[]): void {
+  for (const puff of puffs) {
     setPixel(surface, puff.at.x, puff.at.y, puff.age === "thin" ? "mist" : "cloud");
     if (puff.age === "fresh") setPixel(surface, puff.at.x + 1, puff.at.y - 1, "cloud");
   }
+}
+
+export function drawManagersSmoke(surface: Surface, manager: ManagerState): void {
+  drawSmoke(surface, manager.smoke ?? []);
 }

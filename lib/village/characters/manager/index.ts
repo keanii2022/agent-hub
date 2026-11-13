@@ -2,6 +2,7 @@ export {
   drawArmToTheShoulder,
   drawManager,
   drawManagersSmoke,
+  drawSmoke,
   managerDrawable,
   managerDrawables,
 } from "./draw";
@@ -32,5 +33,5 @@ export {
   type StandingLeg,
   type WalkLeg,
 } from "./round";
-export { managerSmokeOn } from "./smoke";
+export { managerSmokeOn, smokeRisingFrom } from "./smoke";
 export { MANAGER_HEIGHT, MANAGER_WIDTH, managerPictures, managerPoints } from "./sprites";

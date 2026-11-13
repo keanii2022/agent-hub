@@ -6,9 +6,10 @@ import {
 } from "../characters/manager";
 import { housesToVisit, type PlacedHouse } from "../houses/place";
 import { villageHouses } from "../houses/village";
+import { AGENTS_SHARING_BUNKS_FROM } from "../interiors/state";
 import type { VillageNews } from "../state/house-status";
 import type { VillageState } from "../state/village-state";
-import { legsOfTheManagersTrip, type TripLeg } from "./trip";
+import { legsOfAnAgentsWalk, legsOfTheManagersTrip, type TripLeg } from "./trip";
 
 // What has been carried to the desk is history: the clock alone cannot say it.
 // So the handover is a small state machine. A state and one thing that happened
@@ -40,9 +41,23 @@ export type Paperwork = WaitingPaper & {
   readonly seen: boolean;
 };
 
+/** Who is home in each project's house, by name, in the order the house seats them. */
+export type AgentsAtHome = ReadonlyMap<string, readonly string[]>;
+
+/** An agent out of its house with its own urgent paperwork. */
+export type AgentOut = {
+  readonly name: string;
+  /** Its place among its house's agents, counted from 0: the station it sits at inside, and so its colour. */
+  readonly placeInHouse: number;
+  /** It shares its house, so it looks as worn out as it does inside. */
+  readonly isWornOut: boolean;
+};
+
 /** Someone on the way to the desk with paperwork. One trip at a time for each carrier. */
 export type Trip = {
   readonly carrier: string;
+  /** The agent walking its own paperwork over; null when someone else carries, the manager for one. */
+  readonly agent: AgentOut | null;
   /** The project whose door the paperwork comes from. */
   readonly project: string;
   readonly legs: readonly TripLeg[];
@@ -67,24 +82,36 @@ export type DeliveryState = {
   readonly managersRound: { readonly roundMs: number; readonly atMs: number };
   /** Paperwork the owner had already seen on the desk before this state began. */
   readonly seenBefore: readonly string[];
+  /** Who was home in each house at the last news that said. Only an agent known to be home walks out. */
+  readonly agentsAtHome: AgentsAtHome;
 };
 
 export type DeliveryEvent =
   /** The village clock moved on. */
   | { readonly type: "time passed"; readonly atMs: number }
-  /** The hub answered: this is everything waiting now. Anything missing has stopped waiting. */
-  | { readonly type: "news"; readonly atMs: number; readonly waiting: readonly WaitingPaper[] }
+  /**
+   * The hub answered: this is everything waiting now. Anything missing has
+   * stopped waiting. `agentsAtHome` says who is in each house; left out, what
+   * was last known stands.
+   */
+  | {
+      readonly type: "news";
+      readonly atMs: number;
+      readonly waiting: readonly WaitingPaper[];
+      readonly agentsAtHome?: AgentsAtHome;
+    }
   /** The owner opened the desk: what lies on it has been seen. */
   | { readonly type: "desk opened"; readonly atMs: number }
   /**
    * Someone sets off for the desk with the named paperwork, on legs of their
-   * own. The manager does this by himself at a door; any other carrier is sent
-   * off with this event.
+   * own. The manager does this by himself at a door, and an agent by itself
+   * when its paperwork is urgent; anyone else is sent off with this event.
    */
   | {
       readonly type: "carrier sets off";
       readonly atMs: number;
       readonly carrier: string;
+      readonly agent?: AgentOut;
       readonly project: string;
       readonly legs: readonly TripLeg[];
       readonly keys: readonly string[];
@@ -104,7 +131,20 @@ export function deliveryStartingAt(timeMs: number, seenBefore: readonly string[]
     trips: [],
     managersRound: { roundMs: atMs, atMs },
     seenBefore,
+    agentsAtHome: new Map(),
   };
+}
+
+const agentsAtHomeByVillage = new WeakMap<VillageState, AgentsAtHome>();
+
+/** Who the hub says is home in each house, in the order the house seats them. */
+export function agentsAtHomeOf(village: VillageState): AgentsAtHome {
+  let atHome = agentsAtHomeByVillage.get(village);
+  if (!atHome) {
+    atHome = new Map(village.projects.map((project) => [project.project, project.agents.map((agent) => agent.name)]));
+    agentsAtHomeByVillage.set(village, atHome);
+  }
+  return atHome;
 }
 
 const papersByVillage = new WeakMap<VillageState, readonly WaitingPaper[]>();
@@ -175,7 +215,7 @@ function atTheHouse(paper: WaitingPaper): Paperwork {
 
 function afterSettingOff(
   state: DeliveryState,
-  trip: Pick<Trip, "carrier" | "project" | "legs">,
+  trip: Pick<Trip, "carrier" | "agent" | "project" | "legs">,
   keys: readonly string[],
 ): DeliveryState {
   // A carrier already out finishes that trip first, and a trip with nowhere to go is no trip.
@@ -233,7 +273,18 @@ function isTheWaitAt(round: ManagerRound, legNumber: number, house: PlacedHouse)
   return leg.activity === "waiting" && leg.atHouse === house;
 }
 
-/** The next moment the manager, out on his round, waits at a door that has paperwork for him. */
+/** Every agent known to live in a house is out walking, so nobody is in to hand anything over at its door. */
+function everyoneIsOutOf(state: DeliveryState, house: PlacedHouse): boolean {
+  if (house.project === null) return false;
+  const atHome = state.agentsAtHome.get(house.project) ?? [];
+  const away = agentsAwayFrom(state, house.project);
+  return atHome.length > 0 && atHome.every((name) => away.includes(name));
+}
+
+/**
+ * The next moment the manager, out on his round, waits at a door that has
+ * paperwork for him and someone in to hand it over.
+ */
 function nextHandover(state: DeliveryState, houses: readonly PlacedHouse[]): Handover | null {
   if (tripOf(state, MANAGER)) return null;
   const round = managerRoundFor(houses);
@@ -248,7 +299,7 @@ function nextHandover(state: DeliveryState, houses: readonly PlacedHouse[]): Han
       (paper) => paper.project === house.project && paper.place === "at the house",
     );
     const waitLeg = round.legs.findIndex((_, legNumber) => isTheWaitAt(round, legNumber, house));
-    if (!hasPaperwork || waitLeg < 0) continue;
+    if (!hasPaperwork || waitLeg < 0 || everyoneIsOutOf(state, house)) continue;
 
     const waitStarts = legStarts[waitLeg];
     const isWaitingThere = msIntoRound >= waitStarts && msIntoRound < waitStarts + round.legs[waitLeg].lastsMs;
@@ -280,7 +331,7 @@ function afterTheManagerIsHandedPaperwork(
   const project = handover.house.project ?? "";
   const setOff = afterSettingOff(
     state,
-    { carrier: MANAGER, project, legs: legsOfTheManagersTrip(handover.house, walkOn) },
+    { carrier: MANAGER, agent: null, project, legs: legsOfTheManagersTrip(handover.house, walkOn) },
     state.paperwork.filter((paper) => paper.project === project).map((paper) => paper.key),
   );
   return {
@@ -290,6 +341,93 @@ function afterTheManagerIsHandedPaperwork(
       atMs: state.atMs,
     },
   };
+}
+
+/** The name an agent carries its own paperwork under: its project's and its own, so no two houses' agents are mixed up. */
+export function carrierNameOf(project: string, agent: string): string {
+  return `${project}/${agent}`;
+}
+
+function managerIsAtTheDoorOf(state: DeliveryState, house: PlacedHouse, houses: readonly PlacedHouse[]): boolean {
+  const trip = tripOf(state, MANAGER);
+  if (!trip) return managerStateAt(managersRoundMsOf(state), houses).atHouse === house;
+  const leg = trip.legs[trip.onLeg];
+  return leg.activity !== "walking" && leg.atHouse === house;
+}
+
+/** The house and the place in it of the agent who would walk a paper over; null when nobody home can. */
+function walkerFor(
+  state: DeliveryState,
+  paper: Paperwork,
+  houses: readonly PlacedHouse[],
+): { readonly house: PlacedHouse; readonly agent: AgentOut } | null {
+  const house = housesToVisit(houses).find((candidate) => candidate.project === paper.project);
+  const atHome = state.agentsAtHome.get(paper.project) ?? [];
+  const placeInHouse = atHome.indexOf(paper.from);
+  if (!house || placeInHouse < 0) return null;
+  return {
+    house,
+    agent: { name: paper.from, placeInHouse, isWornOut: atHome.length >= AGENTS_SHARING_BUNKS_FROM },
+  };
+}
+
+/** Urgent paperwork still at its house that its own agent, being home, will walk over. */
+function isForItsOwnAgent(state: DeliveryState, paper: Paperwork, houses: readonly PlacedHouse[]): boolean {
+  return paper.isUrgent && paper.place === "at the house" && walkerFor(state, paper, houses) !== null;
+}
+
+/**
+ * While the manager is at a door being handed its paperwork, anything urgent
+ * that turns up there goes into his arms with the rest: he is on his way to
+ * the desk already, and an agent setting off behind him would only get there
+ * as he does.
+ */
+function afterTheManagerIsHandedWhatIsUrgent(state: DeliveryState): DeliveryState {
+  const trip = tripOf(state, MANAGER);
+  const leg = trip?.legs[trip.onLeg];
+  if (!leg || leg.activity === "walking" || leg.atHouse === null || leg.paperworkIs === "on the desk") return state;
+  const { project } = leg.atHouse;
+  const isHandedOver = (paper: Paperwork): boolean =>
+    paper.isUrgent && paper.place === "at the house" && paper.project === project;
+  if (!state.paperwork.some(isHandedOver)) return state;
+  return {
+    ...state,
+    paperwork: state.paperwork.map((paper) =>
+      isHandedOver(paper) ? { ...paper, place: leg.paperworkIs, carrier: MANAGER } : paper,
+    ),
+  };
+}
+
+/**
+ * Urgent paperwork does not wait for the manager's round: its own agent walks
+ * it over, the moment it can. It cannot while another agent is on the way to
+ * the desk with paperwork, so only one is ever there; while it is still out on
+ * an earlier walk; or while the manager stands at its door, who then takes it
+ * himself. Each of those ends with something else happening, so this is asked
+ * again after everything that happens and never has to watch the clock.
+ */
+function afterUrgentPaperworkIsTaken(given: DeliveryState, houses: readonly PlacedHouse[]): DeliveryState {
+  const state = afterTheManagerIsHandedWhatIsUrgent(given);
+  const someoneIsOnTheWay = state.trips.some(
+    (trip) => trip.agent !== null && trip.legs[trip.onLeg].paperworkIs !== "on the desk",
+  );
+  if (someoneIsOnTheWay) return state;
+
+  for (const paper of state.paperwork) {
+    if (!paper.isUrgent || paper.place !== "at the house") continue;
+    const walker = walkerFor(state, paper, houses);
+    const carrier = carrierNameOf(paper.project, paper.from);
+    if (!walker || tripOf(state, carrier) || managerIsAtTheDoorOf(state, walker.house, houses)) continue;
+    return afterSettingOff(
+      state,
+      { carrier, agent: walker.agent, project: paper.project, legs: legsOfAnAgentsWalk(walker.house) },
+      // Everything urgent of its own goes in the one walk.
+      state.paperwork
+        .filter((other) => other.isUrgent && other.project === paper.project && other.from === paper.from)
+        .map((other) => other.key),
+    );
+  }
+  return state;
 }
 
 function firstLegToEnd(state: DeliveryState): { readonly trip: Trip; readonly atMs: number } | null {
@@ -306,6 +444,7 @@ function advancedTo(state: DeliveryState, toMs: number, houses: readonly PlacedH
   const until = Math.max(state.atMs, toMs);
   let current = state;
   for (;;) {
+    current = afterUrgentPaperworkIsTaken(current, houses);
     const legEnd = firstLegToEnd(current);
     const handover = nextHandover(current, houses);
     if (legEnd && legEnd.atMs <= until && (!handover || legEnd.atMs <= handover.atMs)) {
@@ -318,7 +457,11 @@ function advancedTo(state: DeliveryState, toMs: number, houses: readonly PlacedH
   }
 }
 
-function afterNews(state: DeliveryState, waiting: readonly WaitingPaper[]): DeliveryState {
+function afterNews(
+  state: DeliveryState,
+  waiting: readonly WaitingPaper[],
+  agentsAtHome: AgentsAtHome = state.agentsAtHome,
+): DeliveryState {
   const stillWaiting = new Map(waiting.map((paper) => [paper.key, paper]));
   const known = new Set(state.paperwork.map((paper) => paper.key));
 
@@ -338,10 +481,13 @@ function afterNews(state: DeliveryState, waiting: readonly WaitingPaper[]): Deli
 
   const nothingChanged =
     state.hasHeardNews &&
+    agentsAtHome === state.agentsAtHome &&
     fresh.length === 0 &&
     kept.length === state.paperwork.length &&
     kept.every((paper, index) => paper === state.paperwork[index]);
-  return nothingChanged ? state : { ...state, hasHeardNews: true, paperwork: [...kept, ...fresh] };
+  return nothingChanged
+    ? state
+    : { ...state, hasHeardNews: true, paperwork: [...kept, ...fresh], agentsAtHome };
 }
 
 function afterTheDeskIsOpened(state: DeliveryState): DeliveryState {
@@ -368,12 +514,12 @@ export function deliveryAfter(
     case "time passed":
       return now;
     case "news":
-      // He may be waiting at the very door the news is about.
-      return advancedTo(afterNews(now, event.waiting), now.atMs, houses);
+      // He may be waiting at the very door the news is about, and it may be urgent.
+      return advancedTo(afterNews(now, event.waiting, event.agentsAtHome), now.atMs, houses);
     case "desk opened":
       return afterTheDeskIsOpened(now);
     case "carrier sets off":
-      return afterSettingOff(now, event, event.keys);
+      return afterSettingOff(now, { ...event, agent: event.agent ?? null }, event.keys);
   }
 }
 
@@ -387,7 +533,34 @@ export function deliveryFollowing(
   const now = deliveryAfter(state, { type: "time passed", atMs: timeMs }, houses);
   // Without an answer from the hub nothing is known to have changed, so the desk keeps what it has.
   if (typeof news === "string") return now;
-  return deliveryAfter(now, { type: "news", atMs: timeMs, waiting: waitingPapersOf(news) }, houses);
+  return deliveryAfter(
+    now,
+    { type: "news", atMs: timeMs, waiting: waitingPapersOf(news), agentsAtHome: agentsAtHomeOf(news) },
+    houses,
+  );
+}
+
+/** The trips of agents out of their houses with their own paperwork, in the order they set off. */
+export function agentTripsOf(state: DeliveryState): Trip[] {
+  return state.trips.filter((trip) => trip.agent !== null);
+}
+
+/**
+ * The names of a project's agents who are out of its house right now: from
+ * the moment one steps out of the door until it has gone back in.
+ */
+export function agentsAwayFrom(state: DeliveryState, project: string): string[] {
+  return state.trips.flatMap((trip) => (trip.agent !== null && trip.project === project ? [trip.agent.name] : []));
+}
+
+/**
+ * What every agent out of its house is doing, one plain sentence each, for
+ * whoever cannot see the picture. Empty when every agent is home.
+ */
+export function describeAgentsOut(state: DeliveryState): string {
+  return state.trips
+    .flatMap((trip) => (trip.agent === null ? [] : [`${trip.agent.name} is ${trip.legs[trip.onLeg].doing}.`]))
+    .join(" ");
 }
 
 function counted(count: number, one: string, many: string): string {
@@ -399,13 +572,22 @@ export function describeDelivery(state: DeliveryState, houses: readonly PlacedHo
   const trip = tripOf(state, MANAGER);
   const doing = trip ? trip.legs[trip.onLeg].doing : managerStateAt(managersRoundMsOf(state), houses).doing;
   const sentences = [`The manager is ${doing}.`];
+  const agentsOut = describeAgentsOut(state);
+  if (agentsOut) sentences.push(agentsOut);
 
   for (const house of housesToVisit(houses)) {
-    const waiting = state.paperwork.filter(
+    const atTheHouse = state.paperwork.filter(
       (paper) => paper.project === house.project && paper.place === "at the house",
-    ).length;
-    if (waiting > 0) {
-      sentences.push(`${counted(waiting, "paper waits", "papers wait")} at ${house.name} for his next call.`);
+    );
+    const forItsAgent = atTheHouse.filter((paper) => isForItsOwnAgent(state, paper, houses)).length;
+    const forTheManager = atTheHouse.length - forItsAgent;
+    if (forItsAgent > 0) {
+      sentences.push(
+        `${counted(forItsAgent, "urgent paper waits", "urgent papers wait")} at ${house.name} for its agent to walk it over.`,
+      );
+    }
+    if (forTheManager > 0) {
+      sentences.push(`${counted(forTheManager, "paper waits", "papers wait")} at ${house.name} for his next call.`);
     }
   }
 
@@ -423,16 +605,17 @@ export function describeDelivery(state: DeliveryState, houses: readonly PlacedHo
 
 /**
  * The same, as marks for the page to hang on its canvas (`data-desk-papers`,
- * `data-desk-mark`, `data-delivery`), so a browser test can follow the
- * sequence without reading pixels.
+ * `data-desk-mark`, `data-delivery`, `data-agents-out`), so a browser test can
+ * follow the sequence without reading pixels.
  */
 export function deliveryMarksOf(
   state: DeliveryState,
   houses: readonly PlacedHouse[] = villageHouses,
-): { deskPapers: string; deskMark: "showing" | "cleared"; delivery: string } {
+): { deskPapers: string; deskMark: "showing" | "cleared"; delivery: string; agentsOut: string } {
   return {
     deskPapers: String(paperworkOnTheDesk(state).length),
     deskMark: markIsShowing(state) ? "showing" : "cleared",
     delivery: describeDelivery(state, houses),
+    agentsOut: describeAgentsOut(state),
   };
 }

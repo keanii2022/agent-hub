@@ -1,3 +1,4 @@
+import type { Point } from "../../plaza/layout";
 import { managerOnLeg, type RoundLeg, type SmokePuff } from "./round";
 import { MANAGER_WIDTH, managerPoints } from "./sprites";
 
@@ -13,7 +14,7 @@ const PUFF_IS_FRESH_BELOW_ROWS = 3;
 const PUFF_THINS_ABOVE_ROWS = 7;
 const puffDrift = [0, 0, 1, 1, 0, -1, -1, 0, 0, 1] as const;
 
-function cigaretteTipAt(leg: RoundLeg, msIntoLeg: number): { x: number; y: number } {
+function cigaretteTipAt(leg: RoundLeg, msIntoLeg: number): Point {
   const { at, facing } = managerOnLeg(leg, msIntoLeg);
   const tip = managerPoints.cigaretteTip[facing === "up" || facing === "down" ? facing : "side"];
   const acrossBox = facing === "left" ? MANAGER_WIDTH - 1 - tip.x : tip.x;
@@ -23,14 +24,18 @@ function cigaretteTipAt(leg: RoundLeg, msIntoLeg: number): { x: number; y: numbe
   };
 }
 
-/** The puffs in the air `msIntoLeg` after he started a leg with a lit cigarette. A fresh leg starts with clear air. */
-export function managerSmokeOn(leg: RoundLeg, msIntoLeg: number): SmokePuff[] {
+/**
+ * The puffs in the air `msIntoLeg` after someone started a leg with a lit
+ * cigarette. `tipAt` says where its glowing end was at any moment of that leg.
+ * A fresh leg starts with clear air.
+ */
+export function smokeRisingFrom(tipAt: (msIntoLeg: number) => Point, msIntoLeg: number): SmokePuff[] {
   const puffs: SmokePuff[] = [];
   for (let puff = 0; puff < PUFFS; puff += 1) {
     const age = (msIntoLeg + (puff * PUFF_LIFE_MS) / PUFFS) % PUFF_LIFE_MS;
     const bornAtMs = msIntoLeg - age;
     if (bornAtMs < 0) continue;
-    const tip = cigaretteTipAt(leg, bornAtMs);
+    const tip = tipAt(bornAtMs);
     const risen = Math.floor(age / PUFF_RISE_MS);
     puffs.push({
       at: { x: tip.x + puffDrift[risen % puffDrift.length], y: tip.y - 1 - risen },
@@ -38,4 +43,9 @@ export function managerSmokeOn(leg: RoundLeg, msIntoLeg: number): SmokePuff[] {
     });
   }
   return puffs;
+}
+
+/** The manager's puffs `msIntoLeg` after he started a leg with a lit cigarette. */
+export function managerSmokeOn(leg: RoundLeg, msIntoLeg: number): SmokePuff[] {
+  return smokeRisingFrom((bornAtMs) => cigaretteTipAt(leg, bornAtMs), msIntoLeg);
 }

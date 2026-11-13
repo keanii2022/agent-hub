@@ -17,6 +17,11 @@ export type HouseStatus = {
   readonly note: string | null;
   /** A short tag riding on the sign, for example "DEMO"; null for none. */
   readonly tag: string | null;
+  /**
+   * How many of its agents are out walking to the desk. Their windows are off
+   * until they are back. Left out while everyone at home is in.
+   */
+  readonly agentsAway?: number;
 };
 
 export type HouseState = HouseStatus & {
