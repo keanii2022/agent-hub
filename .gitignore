@@ -14,6 +14,10 @@ AGENTS.md
 # Temporary copies of the repo used while building steps in parallel
 .claude/worktrees/
 
+# Local tool settings
+.claude/launch.json
+.claude/settings.local.json
+
 # Secrets
 .env
 .env.*
