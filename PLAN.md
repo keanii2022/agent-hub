@@ -156,7 +156,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** editing plans from the hub.
 
 - [ ] **Step 18: First real house: approval-desk**
-  - **Status:** current
+  - **Status:** not-started
+  - **Waiting on:** approval-desk's own agent (its step 5), which needs API credits. The translator is built and merged; only the proof with ten real logbook entries is missing. Pick this up as soon as approval-desk has entries.
   - **Goal:** A read-only translator that turns approval-desk's logbook into the hub's feed format, so the first house shows a real agent at work.
   - **Done when:** the translator runs against approval-desk's seeded database and the village plays its last ten logbook entries; a test proves the translator never writes.
   - **Scope:** `lib/feed/translators/approval-desk.ts`, tests.
@@ -165,15 +166,124 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
 
 ---
 
+# Stage 2 plan
+
+The village leaves the browser tab. It floats on the Mac desktop as a widget,
+updates by itself, and takes the owner's decisions right there. Agents report
+in through an MCP server and wake up only when the owner presses a button.
+
+**What stays true in Stage 2**
+
+- The hard rules in `RULES.md` do not change. Agents can report and read. They never decide.
+- **Nothing wakes by itself.** No schedules. An agent runs only when the owner presses its house's run button.
+- **Paid AI calls happen only on that button.** Tests never make one.
+- **No server to start.** The widget and the MCP server are small one-shot programs that share the hub's record, the way build-board's two halves share plan files.
+- **The web hub stays.** It is the version a stranger can run from the README. Web and widget draw with the same code.
+- The widget is its own thing. It shares nothing with build-board but the idea.
+
+**Milestones**
+
+- **Floating village = steps 19 to 21.** The village sits on the desktop and moves by itself.
+- **Hands-off loop = steps 22 to 24.** Decide from the widget, agents report in, one button wakes an agent.
+- **Real village = steps 25 to 28.** Real houses, each with its own inside, a real door into approval-desk, and a README for all of it.
+
+**Risks worth knowing**
+
+- The village animates all the time; build-board mostly sits still. Step 21 is the proof that Übersicht keeps up. If it doesn't, the widget shows a slower village rather than none.
+- Übersicht can freeze after sleep. Build-board's restart helper is the known fix.
+- The web hub and the widget can both be open on one record. Step 19 has to prove they never write a line twice.
+
+---
+
+- [ ] **Step 19: The hub without a server**
+  - **Status:** current
+  - **Goal:** Two one-shot commands that do what the running hub does. "Catch up" adds anything new to the record (the scripted days up to now, real feeds read again). "Village state" prints what the village should show right now. Both use the same code as the web hub, and nothing keeps running afterwards.
+  - **Done when:** for one frozen moment, the command prints the same village state the web hub serves, checked by a test; catching up twice adds nothing twice; a test runs the web hub's code and the command on one record at the same time and no line is written twice.
+  - **Scope:** `scripts/hub/`, a shared entry in `lib/` that the web hub and the commands both call, `package.json` scripts, tests.
+  - **Dependencies:** steps 3, 4 and 8.
+  - **Out of scope:** the widget; any change to how the village looks.
+
+- [ ] **Step 20: Drawing code the widget can load**
+  - **Status:** not-started
+  - **Goal:** Package the village's drawing code (engine, plaza, houses, characters, insides) as plain JavaScript a desktop widget can import. It is built from the same source the web page uses. No second copy to keep in step.
+  - **Done when:** one build command makes the package using only tools already in the stack; a test draws the frozen plaza from the package and it matches the web picture pixel for pixel.
+  - **Scope:** the build script, the package's output folder (git-ignored), tests.
+  - **Dependencies:** steps 5 to 10, 13 and 14.
+  - **Out of scope:** Übersicht; any change to the look.
+
+- [ ] **Step 21: The floating village widget**
+  - **Status:** not-started
+  - **Goal:** An Übersicht widget that draws the village on the desktop with a see-through background, so it floats on the wallpaper. Every few seconds it runs step 19's commands; in between it animates on its own clock. Installing it is one command. Before it is drawn, the owner picks what "floating" looks like (an island, loose houses, how big, which corner).
+  - **Done when:** after the install command the village is on the desktop within a minute; a new line in the record shows up without touching anything; if a command fails the village shows its "no news" look instead of going blank; the owner has seen a screenshot and likes the look.
+  - **Scope:** `widget/`, the install command, the stack list in `CLAUDE.md` (Übersicht added; the owner asked for the widget on 2026-11-13), `ARCHITECTURE.md`.
+  - **Dependencies:** steps 19 and 20.
+  - **Out of scope:** clicking anything (step 22); build-board's files and its look.
+
+- [ ] **Step 22: The desk in the widget**
+  - **Status:** not-started
+  - **Goal:** Click the paperwork or the computer and the desk opens inside the widget: everything waiting, urgent first, demo marked DEMO. Approve and Reject work there, and Reject asks for a note. A decision goes through the same decision code as the web desk, by a one-shot command.
+  - **Done when:** step 12's rule tests also pass against the command; approving in the widget sends the house back to work within one refresh; reject without a note is refused; a decision that cannot be written is not sent.
+  - **Scope:** `widget/`, `scripts/hub/` (the decide command), tests.
+  - **Dependencies:** steps 12 and 21.
+  - **Out of scope:** real projects' doors (step 27).
+
+- [ ] **Step 23: MCP server**
+  - **Status:** not-started
+  - **Goal:** A small MCP server, written by hand with no new packages, so any Claude session can read the village and report in. Three tools: what each house is doing, what is waiting for the owner, and "report" (add one line for the project the session is working in). A report goes through the feed checker like any other line. There is no tool that approves, rejects or decides.
+  - **Done when:** listing the tools from the shell shows exactly those three; a bad report is refused with a plain reason; a report for a project with no house is refused; a test proves no tool can write a decision; a reported line shows in the village on the next refresh; the README has the one-line hookup command.
+  - **Scope:** `mcp/`, tests, `README.md` (hookup line only).
+  - **Dependencies:** step 19.
+  - **Out of scope:** schedules; anything that lets an agent decide.
+
+- [ ] **Step 24: The run button**
+  - **Status:** not-started
+  - **Goal:** A house's entry in the list can name one way to wake its agent: the project's own command, or "open a Claude session in that folder with this prompt". Its house gets a run button in the widget. One press, one run. The button shows when the agent last ran and does nothing while a run is still going. The hub only starts the project's own door; it never changes the project.
+  - **Done when:** tests show one press starts one run and a second press during a run starts none; a house with no way to wake it has no button; a test proves no path starts a run without the owner's press; the whole loop works with an invented stand-in agent that reports through step 23.
+  - **Scope:** `config/houses.ts`, `widget/`, `scripts/hub/` (the run command), tests.
+  - **Dependencies:** steps 21 and 23.
+  - **Out of scope:** schedules; paid runs in tests.
+
+- [ ] **Step 25: Real houses and an "add a house" helper**
+  - **Status:** not-started
+  - **Goal:** boxcutter becomes a real house. First read how boxcutter records its work (reading only), then pick the lighter way in: a read-only translator, or reports through step 23. A helper command adds a house by asking for the folder, the name and the sign style, and writes the list entry. A house with real data loses its DEMO tag.
+  - **Done when:** boxcutter's house shows its real activity; a test proves the hub never writes to boxcutter; the helper adds a house in a test by changing only the list; no real boxcutter data is in any tracked file or screenshot.
+  - **Scope:** `lib/feed/translators/`, `config/houses.ts`, `scripts/` (the helper), tests.
+  - **Dependencies:** steps 19 and 23.
+  - **Out of scope:** any change inside boxcutter or any other project.
+
+- [ ] **Step 26: Every house gets its own inside**
+  - **Status:** not-started
+  - **Goal:** Each house's inside comes from its own look sheet in the list: the vibe, single bed or bunks, what is lying around, its props. approval-desk goes first, rebuilt from its village prototype. The stations, cards and who-is-working logic stay shared. The owner is asked for each house's sheet; none is guessed.
+  - **Done when:** the two real houses each show their own inside, on the web and in the widget; a new look is one entry in the list; screenshot tests cover each inside; the owner has seen them and likes them.
+  - **Scope:** `lib/village/interiors/`, `config/houses.ts`, screenshot tests.
+  - **Dependencies:** steps 13 and 20.
+  - **Out of scope:** the shared station and card logic; approval-desk's own prototype files.
+
+- [ ] **Step 27: A real door into approval-desk**
+  - **Status:** not-started
+  - **Goal:** A decision made at the desk reaches approval-desk for real. approval-desk checks it again with its own rules and may say no. The door itself is built inside approval-desk, in its own session there, with the owner's OK. This step is the hub's half: swap the stand-in door for the real one, and settle open question Q6.
+  - **Done when:** Q6 is answered in `RULES.md`; an approval made in the hub shows up in approval-desk's logbook; a decision approval-desk refuses comes back as a plain "no" on the desk; with the door down, the decision is not marked as sent.
+  - **Scope:** `lib/decisions/`, `RULES.md` (Q6), tests.
+  - **Dependencies:** steps 12 and 18, and approval-desk's own door step.
+  - **Out of scope:** building anything inside approval-desk from this repo.
+
+- [ ] **Step 28: Stage 2 README and safety check**
+  - **Status:** not-started
+  - **Goal:** The README covers the widget, the MCP hookup and the run button, and says plainly what costs money and when. The safety check also covers the new folders. Fresh pictures.
+  - **Done when:** the safety check is clean with the owner's banned-names list in place; the widget installs from the README alone; the owner approves the README.
+  - **Scope:** `README.md`, `docs/screenshots/`, `scripts/check-public.ts`.
+  - **Dependencies:** steps 21 to 24.
+  - **Out of scope:** new features.
+
+---
+
 ## Later (not now)
 
 Decided when each starts. The rules in `RULES.md` stay the same.
 
-- **Real approval-desk house:** a read-only translator that reads its logbook. approval-desk is not changed to do this.
-- **Decision door in approval-desk:** the small entrance that lets the hub hand a decision to the project, which re-checks it with its own rules. This changes another project, so it needs the owner's OK and its own session there (Q6).
-- **More real houses:** boxcutter and the owner's other projects, and an easy "add a house" helper.
-- **Live updates:** the hub notices new lines while it is open.
-- **Approval-desk's detailed scene:** rebuilt from the village prototype as that house's inside.
+- **A schedule for boxcutter:** the one house that may wake by itself, because it is the real business. Needs a spending limit first.
+- **Runs with the laptop shut:** agents that live in the cloud instead of on the Mac.
+- **More houses:** the owner's other projects, each with its own look sheet.
 - **Extras:** sound, a day palette.
 
 ---
