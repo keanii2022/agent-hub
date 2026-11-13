@@ -255,6 +255,21 @@ Template:
 - Keys and speeds were picked in the parallel run; see "Calls to review" in `PLAN.md`.
 **Left for later:** nothing for this step.
 
+## Step 16: Safety check, README and demo (2026-11-12, waiting for the owner)
+
+**Built:** A check (`npm run check:public`) that looks through every file git tracks and fails on anything that must never be published: keys and tokens, passwords in config, tracked `.env` files, email addresses, phone numbers, home-folder paths and banned names (H13). A README for a stranger and for the owner in six months: what the hub is, how to run it, what you are looking at, a short demo to click through, the hub's promises, the optional settings, and how to run the tests. Four pictures in `docs/screenshots/`.
+**Decided:**
+- Company, client and employer names can't be listed in a public file, so the check reads them from `private/banned-names.txt`, which is never committed, and says whether it found that list. When it finds one it prints which entry matched, never the name.
+- Anything flagged on purpose goes in a visible allow-list in the script, with a reason. It is empty today: the check found nothing in the repo.
+- Fake secrets in the tests are built from pieces at run time, so no secret-shaped text sits in a tracked file.
+- A fresh copy was proven to run from the README alone: cloned, installed, started, answered with "Agent Hub".
+- The README's pictures come from the tests' frozen hub, so they can be retaken the same way.
+**Left for later:**
+- Not ticked: the owner has to read the README and confirm nothing private is in it.
+- No banned-names list exists yet, so those names are not checked until the owner writes one.
+- `.env.example` was never created (a permission rule blocks writing `.env` files from here).
+- `ARCHITECTURE.md` is out of date in a few places (the approval-desk paragraph, the folder list, the new routes).
+
 ## Step 17: Clipboard on the human desk (2026-11-12)
 
 **Built:** A small clipboard on the pixel desk that the mouse and the keyboard both reach (and the C key from the plaza). It opens the build board (`/clipboard`), a normal web page in the desk's dusk look: one row per project with a bar of done steps out of the total, the numbers as text, and the name of the current step. The hub only reads the plans.

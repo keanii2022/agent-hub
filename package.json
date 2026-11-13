@@ -7,7 +7,9 @@
     "build": "next build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "check:public": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/check-public.ts",
+    "screenshots": "playwright test -c scripts/screenshots/capture.config.ts"
   },
   "dependencies": {
     "next": "^16.4.6",

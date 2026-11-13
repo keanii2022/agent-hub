@@ -224,6 +224,11 @@ Choices made for the owner during the parallel run. Each is a best guess that ca
 - **Step 15: pausing stops the picture, not the hub.** News still arrives and shows on the houses; new paperwork waits at its house until play. The screen says "Paused. News still comes in."
 - **Step 15: pause and speed sit in the middle of the top bar.** Tab order on the plaza is computer, houses, clipboard, pause, speed, then "Open the desk".
 - **Step 15: what counts as an id on screen.** The hub's own line numbers and keys never show. A project's own name for a request may show small.
+- **Step 16: not ticked.** Everything is built and passing, but its last "done when" is the owner reading the README and confirming nothing private is in it.
+- **Step 16: the README's voice and order.** First person ("my agents"), short, no hype. It does not use the name "boxcutter". It says "You need Node 24".
+- **Step 16: the README's pictures** are the plaza, inside the three-agent house, the desk and the build board, in `docs/screenshots/`. `npm run screenshots` retakes the last two.
+- **Step 16: the safety check is `npm run check:public`.** Company, client and employer names are read from `private/banned-names.txt` (one per line, never committed). That file does not exist yet, so those names are not being checked.
+- **Step 16: when the check finds a banned name it never prints the name,** only which line of the list matched.
 - **Step 17: the C key opens the clipboard** from the plaza; the top bar says "Press C for the clipboard".
 - **Step 17: the page is called "Your build board"** at `/clipboard`.
 - **Step 17: each bar is a row of squares,** one per step: green for done, yellow for the current step, dark for still to come, with "N of M steps done" and "Now on step X: name" beside it.
