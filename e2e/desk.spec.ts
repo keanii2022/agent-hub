@@ -233,7 +233,7 @@ test("the desk lists everything the hub says is waiting: who sent it, what it is
   await page.screenshot({ path: testInfo.outputPath("desk-whole-page.png"), fullPage: true });
 });
 
-test("the desk only shows: a request's choices are plain text, and nothing on an item can be pressed", async ({
+test("each request offers its own choices as buttons, and a ready result offers only \"Mark as seen\"", async ({
   page,
 }) => {
   const items = deskItemsFrom(await frozenVillage(page));
@@ -244,8 +244,14 @@ test("the desk only shows: a request's choices are plain text, and nothing on an
   for (const item of decisions) {
     const card = waitingList(page).locator(`[data-line-id="${item.lineId}"]`);
     await expect(card).toContainText("You can answerApprove or Reject");
+    await expect(card.getByRole("button")).toHaveText(item.line.choices!.map((choice) => choice.label));
   }
-  for (const control of ["button", "link", "textbox", "checkbox", "combobox"] as const) {
+  for (const item of items.filter((each) => each.kind === "result")) {
+    const card = waitingList(page).locator(`[data-line-id="${item.lineId}"]`);
+    await expect(card.getByRole("button")).toHaveText(["Mark as seen"]);
+  }
+  // Nothing is typed until a reject asks for its note, and nothing on an item leaves the desk.
+  for (const control of ["link", "textbox", "checkbox", "combobox"] as const) {
     await expect(waitingList(page).getByRole(control)).toHaveCount(0);
   }
 });
@@ -506,7 +512,11 @@ test("the desk lists waiting items from three projects at once, urgent first, th
   await expect(cards.nth(3)).not.toContainText("You can answer");
 
   await expect(cards.getByText("URGENT", { exact: true })).toHaveCount(1);
-  await expect(waitingList(page).getByRole("button")).toHaveCount(0);
+  // A house with a stand-in door offers the request's own choices; one the hub can't answer offers none.
+  await expect(cards.nth(0).getByRole("button")).toHaveText(["Approve", "Reject"]);
+  await expect(cards.nth(1).getByRole("button")).toHaveCount(0);
+  await expect(cards.nth(1)).toContainText("This house can't take answers from the hub yet.");
+  await expect(cards.nth(3).getByRole("button")).toHaveText(["Mark as seen"]);
 });
 
 test("H10: with a real house beside the scripted ones, only the scripted items and lines say DEMO", async ({ page }) => {

@@ -204,6 +204,21 @@ Template:
 - Filters are not kept in the page address.
 - `ARCHITECTURE.md` does not mention `/api/desk/log` yet.
 
+## Step 12: Decisions from the desk (2026-11-12)
+
+**Built:** From the desk the owner can approve, reject with a note, or mark a ready result as seen. A decision is checked, written to the hub's own add-only record, and only then handed to the project's door. In Stage 1 each demo project has a stand-in door with its own small rule that sometimes says no. The project's answer is recorded and shown in plain words. An accepted answer shows up in the project's feed, so the request leaves the desk, the stack shrinks and the house goes back to work.
+**Decided:**
+- Q7: a choice carries nothing but its name, and a reject its note. No changed amount and no other field; the hub refuses anything else. A project that wants to offer another amount lists it as a choice of its own. The desk shows one button per listed choice.
+- H6 is read the strict way: one decision per request, not per ask. If a request asks again, it still has its one decision, whatever the project said to the first. The database enforces it too.
+- H5: if the record can't be written, nothing is sent and the desk says so. The browser test proves it by holding the record's file busy from outside; no test-only switch exists in the code.
+- Decisions, the projects' answers and "seen" marks each have their own add-only table: the database refuses change, delete and overwrite, proven with raw SQL.
+- "Seen" is the owner's own mark, not a decision sent to a project. It takes the result off the desk and the stack.
+- A house with no door (a real house or an unknown project) gets no buttons.
+- The browser tests that decide run against a second hub of their own, with its own record emptied every run, so no other test ever sees their decisions.
+- Finished in a second sitting from the first agent's saved work, after a usage limit cut it off.
+- The stand-ins' rules and the wording were picked in the parallel run; see "Calls to review" in `PLAN.md`.
+**Left for later:** how a decision reaches a real project (Q6, Stage 2).
+
 ## Step 13: Inside the house (2026-11-12)
 
 **Built:** Every house on the plaza is a real button the mouse and the keyboard both reach. Opening one shows its inside: one station per agent (a small robot at a desk) with a card giving the agent's name, its current step and what it is doing, straight from the feed. Two or more agents get bunk beds and a worn-out look. A for-sale house is empty, and a house with no news is dark. Esc or the "< Plaza" button goes back, and focus returns to the house that was opened. The DEMO tag stays visible inside (H10).

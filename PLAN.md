@@ -107,8 +107,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** steps 3, 4 and 10.
   - **Out of scope:** approve and reject (step 12); real projects.
 
-- [ ] **Step 12: Decisions from the desk** (parts 9 and 10)
-  - **Status:** current
+- [x] **Step 12: Decisions from the desk** (parts 9 and 10)
+  - **Status:** done
   - **Goal:** Approve, or reject with a note, from the desk; and mark a ready result as "seen". A decision is written to the hub's record first, then handed to the project's door. In Stage 1 the door is a stand-in per demo project that re-checks with its own scripted rule and may refuse. The hub shows the project's answer in plain words. Settle Q7.
   - **Done when:** Playwright tests pass for: approve accepted by the stand-in (the stack shrinks, the house reacts); reject without a note refused (H7); stand-in refuses and the reason is shown (H2); a second decision on the same request refused (H6); a record that can't be written means nothing is sent (H5).
   - **Scope:** `lib/decisions/`, a decisions table in `lib/store/`, buttons on the desk screen, `tests/`, `e2e/`.
@@ -132,7 +132,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** new houses, new data formats.
 
 - [ ] **Step 15: Controls and access**
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** A speed button and a pause key. Every clickable place is reachable by keyboard. A plain-words summary of the scene for screen readers. A check that no rule codes or ids show on screen (H12).
   - **Done when:** Playwright tests pass for: every clickable place reachable by keyboard; pause freezes the village; speed changes it; a text scan of every screen finds no rule codes.
   - **Scope:** controls and labels across `app/` and `lib/village/`, `e2e/`.
@@ -197,6 +197,14 @@ Choices made for the owner during the parallel run. Each is a best guess that ca
 - **Step 11: the log shows each project's newest 200 events.** Older ones stay in the record but there is no "show older" yet.
 - **Step 11: three projects are proven with a scripted hub in the browser test** (an invented third project), because the demo keeps two.
 - **Step 11: the desk remembers what it showed, per browser tab,** so the plaza's alert mark does not come back for the same papers.
+- **Step 12: one decision per request, ever.** The stricter reading of the rule: even if a request asks again later, or the project refused the first answer, the hub takes no second decision on it.
+- **Step 12: approval-desk's stand-in door** accepts any reject with a note and any approve up to 400 euros. Above that it says "A refund over €400 has to be approved in approval-desk itself."
+- **Step 12: boxcutter's stand-in door** accepts anything except a yes to spending over 30 euros: "Spending over €30 has to be signed off in boxcutter itself."
+- **Step 12: buttons.** One per choice the request lists. Reject opens a note box ("Your note saying why (needed)"). Results get "Mark as seen".
+- **Step 12: when a project says no,** the request stays on the desk with "You answered: ... said no: ..." where the buttons were.
+- **Step 12: when a project says yes,** its feed gets a line like "The owner approved the €275 refund at the desk", the stack shrinks and the agent's window goes bright again.
+- **Step 12: a house with no door** (a real house) shows no buttons and "This house can't take answers from the hub yet."
+- **Step 12: a choice carries only its name, and a reject its note.** A project that wants "approve a different amount" lists it as its own choice.
 - **Step 13: agents are small robots**, in the same metal as the broken robot arms on the plaza.
 - **Step 13: the inside opens in place** on the same picture, with a "< Plaza" button at the top left and Esc to go back.
 - **Step 13: room layout.** One to five agents sit in one row, six to ten in two rows. A lone agent gets a single bed and a tidy room; two or more get bunk beds, one per two agents.

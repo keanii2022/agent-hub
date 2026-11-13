@@ -102,6 +102,41 @@ html:has(.desk) body { margin: 0; background: ${palette.ink}; }
 .desk-reference { margin: 10px 0 0; color: ${palette.mist}; font-size: 13px; }
 .desk-item-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid ${palette.dusk}; }
 
+.desk-item-actions:empty { display: none; }
+.desk-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.desk-button {
+  min-height: 36px;
+  padding: 6px 14px;
+  border: 1px solid ${palette.stone};
+  border-radius: 4px;
+  background: ${palette.night};
+  color: ${palette.cream};
+  font: inherit;
+  cursor: pointer;
+}
+.desk-button:hover { border-color: ${palette.lamp}; }
+.desk-button-main { border-color: ${palette.lamp}; color: ${palette.lamp}; font-weight: 600; }
+.desk-button[aria-disabled="true"] { opacity: 0.55; cursor: progress; }
+.desk-answered { margin: 0; color: ${palette.cloud}; }
+.desk-note-form { display: grid; gap: 8px; width: 100%; }
+.desk-note-form label { color: ${palette.mist}; font-size: 14px; }
+.desk-note-form textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid ${palette.stone};
+  border-radius: 4px;
+  background: ${palette.ink};
+  color: ${palette.cream};
+  font: inherit;
+  resize: vertical;
+}
+.desk-note-form textarea[aria-invalid="true"] { border-color: ${palette.sunset}; }
+.desk-note-problem { margin: 0; color: ${palette.peach}; font-size: 14px; }
+.desk-said { margin: 12px 0; padding: 10px 14px; border-left: 4px solid ${palette.lamp}; background: ${palette.night}; }
+/* Kept on the page while empty: a hidden one would not be read out when its first words arrive. */
+.desk-said:empty { margin: 0; padding: 0; border: 0; }
+.desk-said:focus { outline: none; }
+
 .desk-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 20px; margin: 16px 0 8px; }
 .desk-filters label { display: grid; gap: 4px; color: ${palette.mist}; font-size: 14px; }
 .desk-filters select, .desk-filters button {

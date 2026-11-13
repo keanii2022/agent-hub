@@ -1,6 +1,7 @@
 import { isDeepStrictEqual } from "node:util";
 import { checkFeedLine, type FeedLine, type FeedProblem } from "../feed";
-import { HubStoreError, openHubDatabase } from "./database";
+import { HubStoreError, inOneTransaction, openHubDatabase } from "./database";
+import { deskRecordOn, type DeskRecord } from "./desk-record";
 
 export type StoredFeedLine = {
   /** The record's own running number: 1 for the first line stored, always growing. */
@@ -38,7 +39,8 @@ export type LineFilter = {
   limit?: number;
 };
 
-export type HubStore = {
+/** The feed lines, and beside them what the owner did at the desk (`DeskRecord`). */
+export type HubStore = DeskRecord & {
   addLine(candidate: unknown): AddLineResult;
   /** One answer per candidate, in the same order. A refused line never stops the others. */
   addLines(candidates: readonly unknown[]): AddLineResult[];
@@ -101,21 +103,9 @@ export function openHubStore(databasePath: string): HubStore {
     };
   }
 
-  function inOneTransaction<Result>(work: () => Result): Result {
-    database.exec("BEGIN IMMEDIATE");
-    try {
-      const result = work();
-      database.exec("COMMIT");
-      return result;
-    } catch (error) {
-      if (database.isTransaction) database.exec("ROLLBACK");
-      throw error;
-    }
-  }
-
   function addLines(candidates: readonly unknown[]): AddLineResult[] {
     try {
-      return inOneTransaction(() => candidates.map(addCheckedLine));
+      return inOneTransaction(database, () => candidates.map(addCheckedLine));
     } catch (cause) {
       throw new HubStoreError(
         "The hub couldn't write to its own record, so nothing was stored.",
@@ -167,6 +157,7 @@ export function openHubStore(databasePath: string): HubStore {
   }
 
   return {
+    ...deskRecordOn(database),
     addLine: (candidate) => addLines([candidate])[0],
     addLines,
     readLines,

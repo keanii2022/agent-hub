@@ -2,12 +2,22 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  DESK_COULD_NOT_REACH_THE_HUB,
+  askForDeskDecisions,
+  sendDeskDecision,
+  sendSeenAtTheDesk,
+  watchDeskDecisions,
+  type DeskAnswer,
+  type DeskDecisions,
+} from "../../lib/decisions";
 import {
   DESK_ORDER_IN_WORDS,
   EVERYTHING,
   PLAZA_ROUTE,
   agentsOffered,
+  askForDeskLog,
   choicesInWords,
   deskItemsFrom,
   emptyLogWords,
@@ -27,8 +37,10 @@ import {
   type LogEntry,
   type LogFilter,
 } from "../../lib/desk";
+import type { FeedChoice } from "../../lib/feed/format";
 import type { VillageState } from "../../lib/village/state/village-state";
-import { watchVillageState } from "../../lib/village/state/watch";
+import { askForVillageState, watchVillageState } from "../../lib/village/state/watch";
+import { DecisionActions, ResultActions } from "./DeskActions";
 
 /** The hub's latest good answer, and whether its newest ask got none. */
 type Heard<Answer> = { latest: Answer | null; hubIsSilent: boolean };
@@ -45,10 +57,10 @@ const HUB_IS_SILENT = "The desk can't reach the hub right now. It keeps trying."
 type WaitingCardProps = {
   item: DeskItem;
   /**
-   * The item's own controls, shown at its foot. Empty for now: the desk only
-   * shows. `item.project` and `item.lineId` say what an answer is about.
+   * The item's own controls, shown at its foot. They are handed the id of the
+   * item's heading, so each button can be read out with what it is about.
    */
-  actions?: ReactNode;
+  actions?: (headingId: string) => ReactNode;
 };
 
 function WaitingCard({ item, actions }: WaitingCardProps) {
@@ -87,7 +99,7 @@ function WaitingCard({ item, actions }: WaitingCardProps) {
         )}
       </dl>
       <p className="desk-reference">Request {item.line.request}</p>
-      {actions !== undefined && <div className="desk-item-actions">{actions}</div>}
+      {actions !== undefined && <div className="desk-item-actions">{actions(headingId)}</div>}
     </article>
   );
 }
@@ -131,9 +143,85 @@ export function DeskScreen() {
   const [village, setVillage] = useState<Heard<VillageState>>(NOTHING_HEARD);
   const [log, setLog] = useState<Heard<DeskLog>>(NOTHING_HEARD);
   const [filter, setFilter] = useState<LogFilter>(EVERYTHING);
+  const [decisions, setDecisions] = useState<Heard<DeskDecisions>>(NOTHING_HEARD);
+  /** The answers the hub gave to this page's own buttons: known here before the next ask brings them. */
+  const [answeredHere, setAnsweredHere] = useState<ReadonlyMap<string, DeskAnswer>>(new Map());
+  const [seenHere, setSeenHere] = useState<ReadonlySet<string>>(new Set());
+  /** The item whose button is waiting for the hub's answer. One at a time. */
+  const [busyWith, setBusyWith] = useState<string | null>(null);
+  const isBusy = useRef(false);
+  const [said, setSaid] = useState("");
+  const saidRef = useRef<HTMLParagraphElement>(null);
 
-  useEffect(() => watchVillageState((news) => setVillage((heard) => heardAfter(heard, news))), []);
+  useEffect(
+    () =>
+      watchVillageState((news) => {
+        // An answer that was on its way while a button was pressed is older than what the button brings back.
+        if (!isBusy.current) setVillage((heard) => heardAfter(heard, news));
+      }),
+    [],
+  );
   useEffect(() => watchDeskLog((news) => setLog((heard) => heardAfter(heard, news))), []);
+  useEffect(
+    () =>
+      watchDeskDecisions((news) => {
+        if (!isBusy.current) setDecisions((heard) => heardAfter(heard, news));
+      }),
+    [],
+  );
+
+  /** Presses one button: sends, then looks at the hub again before saying how it ended. */
+  const press = useCallback(
+    async (itemKey: string, send: () => Promise<{ words: string; takesTheButtonsAway: boolean }>) => {
+      if (isBusy.current) return;
+      isBusy.current = true;
+      setBusyWith(itemKey);
+      const { words, takesTheButtonsAway } = await send();
+      const [villageNow, decisionsNow, logNow] = await Promise.all([
+        askForVillageState(),
+        askForDeskDecisions(),
+        askForDeskLog(),
+      ]);
+      setVillage((heard) => heardAfter(heard, villageNow));
+      setDecisions((heard) => heardAfter(heard, decisionsNow));
+      setLog((heard) => heardAfter(heard, logNow));
+      isBusy.current = false;
+      setBusyWith(null);
+      setSaid(words);
+      // The buttons that were pressed are gone, so the keyboard goes to what the desk just said.
+      if (takesTheButtonsAway) saidRef.current?.focus();
+    },
+    [],
+  );
+
+  const answer = useCallback(
+    (item: DeskItem, choice: FeedChoice, note?: string) =>
+      press(item.key, async () => {
+        const outcome = await sendDeskDecision({
+          project: item.project,
+          lineId: item.lineId,
+          choice: choice.id,
+          ...(note !== undefined && { note }),
+        });
+        if (outcome === "unreachable") return { words: DESK_COULD_NOT_REACH_THE_HUB, takesTheButtonsAway: false };
+        if (!("answer" in outcome)) return { words: outcome.words, takesTheButtonsAway: false };
+        setAnsweredHere((answers) => new Map(answers).set(item.key, outcome.answer));
+        return { words: outcome.words, takesTheButtonsAway: true };
+      }),
+    [press],
+  );
+
+  const markSeen = useCallback(
+    (item: DeskItem) =>
+      press(item.key, async () => {
+        const outcome = await sendSeenAtTheDesk({ project: item.project, lineId: item.lineId });
+        if (outcome === "unreachable") return { words: DESK_COULD_NOT_REACH_THE_HUB, takesTheButtonsAway: false };
+        const isSeen = outcome.outcome === "seen" || outcome.outcome === "already_seen";
+        if (isSeen) setSeenHere((keys) => new Set(keys).add(item.key));
+        return { words: outcome.words, takesTheButtonsAway: isSeen };
+      }),
+    [press],
+  );
 
   // Arriving from the plaza, reading starts at the top of the desk.
   useEffect(() => headingRef.current?.focus(), []);
@@ -146,7 +234,16 @@ export function DeskScreen() {
     return () => window.removeEventListener("keydown", onKey);
   }, [router]);
 
-  const items = useMemo(() => (village.latest ? deskItemsFrom(village.latest) : null), [village.latest]);
+  const items = useMemo(
+    () => (village.latest ? deskItemsFrom(village.latest).filter((item) => !seenHere.has(item.key)) : null),
+    [village.latest, seenHere],
+  );
+  const answerOnRecord = (item: DeskItem): DeskAnswer | null =>
+    answeredHere.get(item.key) ??
+    decisions.latest?.answers.find((made) => made.project === item.project && made.lineId === item.lineId) ??
+    null;
+  const canAnswer = (item: DeskItem): boolean | null =>
+    decisions.latest === null ? null : item.line.demo && decisions.latest.canAnswer.includes(item.project);
   const silentHouses = useMemo(() => (village.latest ? housesWithNoNews(village.latest) : []), [village.latest]);
 
   // Whatever the desk has shown, the owner has seen: the plaza's mark stays away for these.
@@ -187,6 +284,10 @@ export function DeskScreen() {
         <h2 id="desk-waiting-heading">
           Waiting for you{items && <span className="desk-count"> ({items.length})</span>}
         </h2>
+        {/* Always on the page, so what a button led to is read out the moment it is known. */}
+        <p ref={saidRef} tabIndex={-1} className="desk-said" role="status" aria-live="polite" data-desk-said>
+          {said}
+        </p>
         {items === null ? (
           <p className="desk-empty" role="status">
             {village.hubIsSilent ? HUB_IS_SILENT : "Looking at what is on the desk."}
@@ -211,7 +312,28 @@ export function DeskScreen() {
                 <ul className="desk-items">
                   {items.map((item) => (
                     <li key={item.key}>
-                      <WaitingCard item={item} />
+                      <WaitingCard
+                        item={item}
+                        actions={(headingId) =>
+                          item.kind === "result" ? (
+                            <ResultActions
+                              describedBy={headingId}
+                              isBusy={busyWith !== null}
+                              onSeen={() => void markSeen(item)}
+                            />
+                          ) : (
+                            <DecisionActions
+                              item={item}
+                              describedBy={headingId}
+                              answer={answerOnRecord(item)}
+                              canAnswer={canAnswer(item)}
+                              isBusy={busyWith !== null}
+                              onAnswer={(choice, note) => void answer(item, choice, note)}
+                              onSay={setSaid}
+                            />
+                          )
+                        }
+                      />
                     </li>
                   ))}
                 </ul>
