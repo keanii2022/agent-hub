@@ -116,7 +116,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** any real project; changing approval-desk; how decisions travel to real projects (Q6, Stage 2).
 
 - [ ] **Step 13: Inside the house** (part 7)
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** Clicking a house opens its inside: the agents at work at their stations, showing their current step from the feed. Two or more agents get a bunk bed and a worn-out, hard-working look. Any number of agents (1 to 10) lays out sensibly. A for-sale house is empty. There is a way back to the plaza.
   - **Done when:** houses with 1, 3 and 10 agents all lay out; each agent's current step comes from the feed; the for-sale inside is empty; Esc or a back button returns to the plaza; it works by keyboard; screenshot tests pass.
   - **Scope:** `lib/village/interiors/`, `tests/`, `e2e/`.
@@ -156,7 +156,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** editing plans from the hub.
 
 - [ ] **Step 18: First real house: approval-desk**
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** A read-only translator that turns approval-desk's logbook into the hub's feed format, so the first house shows a real agent at work.
   - **Done when:** the translator runs against approval-desk's seeded database and the village plays its last ten logbook entries; a test proves the translator never writes.
   - **Scope:** `lib/feed/translators/approval-desk.ts`, tests.
@@ -175,3 +175,16 @@ Decided when each starts. The rules in `RULES.md` stay the same.
 - **Live updates:** the hub notices new lines while it is open.
 - **Approval-desk's detailed scene:** rebuilt from the village prototype as that house's inside.
 - **Extras:** sound, a day palette.
+
+---
+
+## Calls to review
+
+Choices made for the owner during the parallel run. Each is a best guess that can be changed.
+
+- **Step 18: not ticked.** The translator is built and tested, but no approval-desk database holds ten logbook entries (the seeded one has none, its prepared queue has three), so "plays its last ten" is proven only on invented rows. Making real entries means running approval-desk, which is the owner's call.
+- **Step 18: old real entries are shown honestly.** Each line keeps its own time, so a house fed by old entries is dark with "no news" and no DEMO tag. Times are never moved to look live.
+- **Step 18: a real house waits one hour before going dark** (demo houses wait five minutes).
+- **Step 18: every real approval-desk line is credited to `refund-agent`**, the same resident as the scripted house.
+- **Step 18: the real house is switched on with `APPROVAL_DESK_DATABASE`** set to the database's path when starting the hub. Unset, the house stays on demo data.
+- **Step 18: wording of real lines**, for example "The gate sent a $340.00 refund to a person" and "The owner approved a $340.00 refund".

@@ -162,3 +162,21 @@ Template:
 - The village looks back 24 hours, so a request waiting longer than a day drops out of the picture (the record keeps it).
 - If the owner's own hub is running on port 4040, `npm run e2e` reuses it and fails with a plain message asking to stop it first.
 - `ARCHITECTURE.md`'s "what you see" table does not mention the soft window or the five minutes yet.
+
+## Step 18: First real house: approval-desk (2026-11-12, not finished)
+
+**Built:** A read-only translator (`lib/feed/translators/approval-desk.ts`) that turns approval-desk's logbook rows into checked feed lines marked real, each keeping its own time. When the hub is started with `APPROVAL_DESK_DATABASE` set, it feeds the last ten entries into its record, then anything newer every five seconds; the house loses its DEMO tag and its scripted day is not played. Unset, nothing changes.
+**Decided:**
+- The village reads a real house from real lines only and a demo house from scripted lines only, so the two never mix.
+- Old entries are shown as they are: a dark house with "no news". Times are never moved to look live.
+- A real house goes dark after one hour without news; demo houses stay at five minutes.
+- Every real line is credited to `refund-agent`.
+- A row the translator can't read is refused in plain words and never stops the rest (H8, H9).
+- The translator never writes: tests show the database's bytes are unchanged and that a write through its connection fails. Databases in write-ahead mode are refused, because even a read-only open would leave side files in the other project's folder.
+- The real gate outcome sits at a different place in the row than the step 2 sample assumed. The translator follows the real shape.
+- Built in the parallel run, with the owner's go-ahead for the whole remaining plan.
+**Left for later:**
+- Not ticked: no approval-desk database has ten logbook entries, so the ten-entry run is proven only on invented rows.
+- `ARCHITECTURE.md`'s "how approval-desk fits" paragraph and its folder list are out of date.
+- `/api/events` still lists every stored line, real and scripted.
+- Neither the README nor `.env.example` mentions the new setting yet.

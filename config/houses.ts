@@ -18,6 +18,10 @@ import type { HouseEntry } from "../lib/village/houses/list";
 //   data     "demo" while its activity is scripted, "real" once it is the
 //            project's own. A demo house always says DEMO.
 //
+// approval-desk is real only while the hub is started with
+// APPROVAL_DESK_DATABASE naming that project's own database file. Without it,
+// it plays its scripted day and says DEMO.
+//
 // An empty house is { forSale: true, lot: "..." }. To move a project in,
 // replace that entry with the project's own.
 //
@@ -29,7 +33,9 @@ export const houses: readonly HouseEntry[] = [
     build: "brick office",
     sign: "green tick marquee",
     props: ["rubber stamp", "stamped papers"],
-    data: "demo",
+    // Set in next.config.ts. Spelled out in full so the page, which can't
+    // read the server's settings, gets the same word built in.
+    data: process.env.HUB_APPROVAL_DESK_DATA === "real" ? "real" : "demo",
   },
   {
     // The team house. Its name is kept in one place until the owner confirms it.

@@ -5,7 +5,14 @@ import {
   type DemoTimer,
   type RunningDemoPlayer,
 } from "./player";
+import {
+  configuredRealFeeds,
+  startRealFeeds,
+  type RealFeed,
+  type RunningRealFeeds,
+} from "./real-feeds";
 import type { DemoScript } from "./script";
+import { DEMO_SCRIPTS } from "./scripts";
 
 export const HUB_DATABASE_PATH_VARIABLE = "HUB_DATABASE_PATH";
 
@@ -44,6 +51,8 @@ export type DemoHub = {
   databasePath: string;
   store: HubStore;
   player: RunningDemoPlayer;
+  /** The projects on their own data. None unless the hub was told where a project's records are. */
+  realFeeds: RunningRealFeeds;
   /** The hub's own clock: the real time, or the one frozen moment. Everything that answers "as of now" asks here. */
   now: DemoClock;
   isFrozen: boolean;
@@ -52,6 +61,7 @@ export type DemoHub = {
 export type DemoHubOptions = {
   databasePath?: string;
   scripts?: readonly DemoScript[];
+  realFeeds?: readonly RealFeed[];
   now?: DemoClock;
   timer?: DemoTimer;
 };
@@ -67,7 +77,8 @@ const holder = globalThis as HubHolder;
  * The one hub of this server process. The first call opens the record, fills
  * in the recent past and starts the player; every later call gets the same hub
  * back, and its options are ignored. With `HUB_FROZEN_AT` set, the clock stays
- * on that moment and the player never ticks.
+ * on that moment and the player never ticks. A project with a real feed is
+ * read from its own records, and its scripted day is not played.
  */
 export function demoHub(options: DemoHubOptions = {}): DemoHub {
   const running = holder[RUNNING_HUB];
@@ -77,15 +88,19 @@ export function demoHub(options: DemoHubOptions = {}): DemoHub {
   const isFrozen = frozenAt !== null;
   const now = options.now ?? (isFrozen ? () => frozenAt : () => new Date());
   const databasePath = options.databasePath ?? hubDatabasePath();
+  const feeds = options.realFeeds ?? configuredRealFeeds();
+  const isReal = (project: string) => feeds.some((feed) => feed.project === project);
+  const timer = options.timer ?? (isFrozen ? neverTicks : undefined);
   const store = openHubStore(databasePath);
   try {
     const player = startDemoPlayer({
       store,
-      scripts: options.scripts,
+      scripts: (options.scripts ?? DEMO_SCRIPTS).filter((script) => !isReal(script.project)),
       now,
-      timer: options.timer ?? (isFrozen ? neverTicks : undefined),
+      timer,
     });
-    const hub = { databasePath, store, player, now, isFrozen };
+    const realFeeds = startRealFeeds({ store, feeds, timer });
+    const hub = { databasePath, store, player, realFeeds, now, isFrozen };
     holder[RUNNING_HUB] = hub;
     return hub;
   } catch (problem) {
@@ -98,6 +113,7 @@ export function closeDemoHub(): void {
   const running = holder[RUNNING_HUB];
   if (running === undefined) return;
   running.player.stop();
+  running.realFeeds.stop();
   running.store.close();
   delete holder[RUNNING_HUB];
 }
