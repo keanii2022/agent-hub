@@ -1,0 +1,25 @@
+export { drawManager, managerDrawable } from "./draw";
+export {
+  KNOCKS_AT_A_DOOR,
+  KNOCK_EVERY_MS,
+  KNUCKLES_ON_DOOR_MS,
+  MANAGER_PACE,
+  MANAGER_STRIDE_PART_PIXELS,
+  REST_AT_THE_DESK_MS,
+  WAIT_AT_A_DOOR_MS,
+  describeManagersRound,
+  legStartsOf,
+  legsOfACall,
+  legsOfTheReturn,
+  managerHome,
+  managerRoundFor,
+  managerStateAt,
+  walkLeg,
+  type ManagerActivity,
+  type ManagerRound,
+  type ManagerState,
+  type RoundLeg,
+  type StandingLeg,
+  type WalkLeg,
+} from "./round";
+export { MANAGER_HEIGHT, MANAGER_WIDTH, managerPictures, managerPoints } from "./sprites";

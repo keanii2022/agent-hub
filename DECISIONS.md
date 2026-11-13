@@ -163,6 +163,17 @@ Template:
 - If the owner's own hub is running on port 4040, `npm run e2e` reuses it and fails with a plain message asking to stop it first.
 - `ARCHITECTURE.md`'s "what you see" table does not mention the soft window or the five minutes yet.
 
+## Step 9: The manager's rounds (2026-11-12)
+
+**Built:** The manager walks his round on the plaza: from behind the human's chair, along the paths to each occupied house in list order, three knocks, a wait, on to the next, then back to rest at the desk. For-sale houses are skipped. A test shows a new house joins the round with only a list entry added.
+**Decided:**
+- What he is doing at any moment is worked out from the clock time and the house list alone, apart from the drawing, so tests check it as data.
+- Walking is a general helper (`lib/village/routes`): the shortest walk between two spots along paths and paving, going round the desk. Steps 10 and 14 reuse it.
+- The round is built from named legs (walk, knock, wait), so step 10 can add the handover.
+- How he looks and his pace were picked in the parallel run; see "Calls to review" in `PLAN.md`.
+**Left for later:**
+- The screen-reader text describes the round as a whole, not what he is doing right now. Step 15 has what it needs to say that.
+
 ## Step 18: First real house: approval-desk (2026-11-12, not finished)
 
 **Built:** A read-only translator (`lib/feed/translators/approval-desk.ts`) that turns approval-desk's logbook rows into checked feed lines marked real, each keeping its own time. When the hub is started with `APPROVAL_DESK_DATABASE` set, it feeds the last ten entries into its record, then anything newer every five seconds; the house loses its DEMO tag and its scripted day is not played. Unset, nothing changes.

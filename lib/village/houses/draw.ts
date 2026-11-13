@@ -135,17 +135,23 @@ export function houseDrawables(
   }));
 }
 
-/** The plaza with its houses standing in it: the picture on the home page. */
+/**
+ * The plaza with its houses standing in it: the picture on the home page.
+ * `whoIsOut` is everyone walking or standing about, the manager for one; they
+ * are drawn in depth order with everything else.
+ */
 export function drawVillage(
   surface: Surface,
   plaza: PlazaState,
   houses: readonly PlacedHouse[] = villageHouses,
   statusOf: StatusOf = defaultHouseStatus,
+  whoIsOut: readonly Drawable[] = [],
 ): void {
   drawPlazaGround(surface, plaza);
   drawInDepthOrder(surface, [
     ...plazaDrawables(plaza),
     ...houseDrawables(houses, plaza.timeMs, statusOf),
+    ...whoIsOut,
   ]);
   drawPlazaAir(surface, plaza);
 }

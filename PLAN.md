@@ -83,8 +83,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** steps 3, 4 and 7.
   - **Out of scope:** anyone walking around; the desk screen.
 
-- [ ] **Step 9: The manager's rounds** (part 7)
-  - **Status:** current
+- [x] **Step 9: The manager's rounds** (part 7)
+  - **Status:** done
   - **Goal:** The manager character walks the paths from the desk to each house in turn, knocks, waits, moves on, and walks back to the desk. The route comes from the house list, so a new house joins automatically. At this step nothing is handed over yet.
   - **Done when:** the manager visits every occupied house in order and returns; for-sale houses are skipped; a test shows a new house joins the route with no code change.
   - **Scope:** `lib/village/characters/manager`, route logic, `tests/`.
@@ -92,7 +92,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** handover, paperwork, the exclamation mark, urgent walkers.
 
 - [ ] **Step 10: Handover and the paperwork stack** (part 7)
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** When a house has something waiting for the owner (a request that needs a decision, or a result that is ready), the agent hands it to the manager at the door ("oh snap, master has to see this"). The manager walks it to the desk smoking, taps the owner on the shoulder ("here you go, master"), and drops a big stack. The stack grows with the number of waiting items. An exclamation mark shows above the computer until the desk is opened.
   - **Done when:** scripted "needs a decision" and "result ready" events play the full sequence; the stack size follows the waiting count; the exclamation mark shows, then clears when the desk is opened; tests check the sequence state.
   - **Scope:** village animation and state in `lib/village/`, `tests/`, `e2e/`.
@@ -182,6 +182,9 @@ Decided when each starts. The rules in `RULES.md` stay the same.
 
 Choices made for the owner during the parallel run. Each is a best guess that can be changed.
 
+- **Step 9: how the manager looks.** A small man in a dark hat with a red band, grey suit, red tie and a moustache.
+- **Step 9: his pace.** He knocks three times, waits about two and a half seconds at each door, and rests four seconds at the desk between rounds. A full round of today's two houses takes about thirty seconds.
+- **Step 9: his words.** "walking to X", "knocking at X", "waiting at X", "walking back to the desk", "standing at the desk".
 - **Step 18: not ticked.** The translator is built and tested, but no approval-desk database holds ten logbook entries (the seeded one has none, its prepared queue has three), so "plays its last ten" is proven only on invented rows. Making real entries means running approval-desk, which is the owner's call.
 - **Step 18: old real entries are shown honestly.** Each line keeps its own time, so a house fed by old entries is dark with "no news" and no DEMO tag. Times are never moved to look live.
 - **Step 18: a real house waits one hour before going dark** (demo houses wait five minutes).

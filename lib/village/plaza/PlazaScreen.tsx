@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { describeManagersRound, managerDrawable, managerStateAt } from "../characters/manager";
 import { SCREEN_HEIGHT, SCREEN_WIDTH, createClock, palette, startScreen } from "../engine";
 import { drawVillage } from "../houses/draw";
 import { describeHouses, villageHouses } from "../houses/village";
@@ -98,6 +99,7 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaS
           plazaStateAt(timeMs, { computerHasFocus: computerHasFocusRef.current }),
           villageHouses,
           statusOfVillage(news),
+          [managerDrawable(managerStateAt(timeMs, villageHouses))],
         );
         // Written in the same frame as the picture, so whoever reads the mark
         // (a browser test, say) can trust the picture already shows that news.
@@ -141,7 +143,7 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaS
         <canvas
           ref={canvasRef}
           role="img"
-          aria-label={`The plaza at dusk. The human sits at his desk in the middle, typing at his computer. ${describeHouses()} ${describeVillageNews(villageNews)}`.trim()}
+          aria-label={`The plaza at dusk. The human sits at his desk in the middle, typing at his computer. ${describeHouses()} ${describeManagersRound(villageHouses)} ${describeVillageNews(villageNews)}`.trim()}
         />
         <div style={overlayStyle}>
           <button
