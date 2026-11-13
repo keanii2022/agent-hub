@@ -17,6 +17,7 @@ import {
   type WaitingItem,
 } from "../lib/village/state";
 import { FROZEN_HUB_MOMENT, expectTheFrozenVillage } from "./frozen-hub";
+import { expectPlainWordsOnScreen } from "./plain-words";
 
 const COMPUTER_NAME = "The computer on the desk";
 const FIXED_PLAZA = "/?time=4200&scale=2";
@@ -95,6 +96,7 @@ const CODE_WORDS = ["needs_human", "result_ready", "feed_failed", "no_news", "un
 
 /** H12: nothing a person reads on the desk is a rule code, a status code or a line's id. */
 async function expectPlainWordsOnly(page: Page, lineIds: readonly string[]): Promise<void> {
+  await expectPlainWordsOnScreen(page, { lineIds });
   const words = await page.locator("body").innerText();
   expect(words).not.toMatch(RULE_CODE);
   for (const code of CODE_WORDS) expect(words).not.toContain(code);

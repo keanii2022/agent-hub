@@ -19,6 +19,7 @@ import { glassOfWindow, villageHouses, type PlacedHouse } from "../lib/village/h
 import type { Rect } from "../lib/village/plaza";
 import { VILLAGE_STATE_ROUTE, projectStateOf, type ProjectState, type VillageState } from "../lib/village/state";
 import { DECISIONS_HUB_MOMENT, decisionsHubRecord } from "./decisions-hub";
+import { expectPlainWordsOnScreen } from "./plain-words";
 
 // These tests decide things, and a decision stays on the hub's record. They
 // run against a hub of their own (see decisions-hub.ts), one after another.
@@ -142,6 +143,7 @@ const CODE_WORDS = [
 
 /** H12: nothing a person reads on the desk is a rule code, an outcome's code name or a line's id. */
 async function expectPlainWordsOnly(page: Page, lineIds: readonly string[]): Promise<void> {
+  await expectPlainWordsOnScreen(page, { lineIds });
   const words = await page.locator("body").innerText();
   expect(words).not.toMatch(RULE_CODE);
   for (const code of CODE_WORDS) expect(words).not.toContain(code);
@@ -200,7 +202,7 @@ test("an approval the project takes: it is on record, the request leaves the des
   const canvas = await openPlaza(page);
   await expect(canvas).toHaveAttribute("data-desk-papers", String(before.waitingCount));
   expect(await windowLights(canvas, approvalDeskHouse)).toEqual(lightsFor(approvalDeskHouse, houseBefore));
-  await expect(canvas).toHaveAccessibleName(
+  await expect(canvas).toHaveAccessibleDescription(
     new RegExp(`${APPROVAL_DESK}: [^.]*${houseBefore.waiting.length} waiting for your answer`),
   );
 
@@ -235,6 +237,7 @@ test("an approval the project takes: it is on record, the request leaves the des
   const row = logRows(page).filter({ hasText: "The owner approved the €275 refund at the desk" });
   await expect(row).toHaveCount(1);
   await expect(row.getByText("DEMO", { exact: true })).toBeVisible();
+  await expectPlainWordsOnly(page, [armchair.lineId]);
 
   // The stack shrinks, and the house reacts: one request fewer, and its agent is at work again.
   const after = await villageNow(page.request);
@@ -251,7 +254,7 @@ test("an approval the project takes: it is on record, the request leaves the des
   await expect(canvasAfter).toHaveAttribute("data-desk-papers", String(before.waitingCount - 1));
   expect(await windowLights(canvasAfter, approvalDeskHouse)).toEqual(lightsFor(approvalDeskHouse, houseAfter));
   expect((await windowLights(canvasAfter, approvalDeskHouse))[0]).toBe("bright");
-  await expect(canvasAfter).toHaveAccessibleName(
+  await expect(canvasAfter).toHaveAccessibleDescription(
     new RegExp(`${APPROVAL_DESK}: [^.]*1 working, ${houseAfter.waiting.length} waiting for your answer`),
   );
 });

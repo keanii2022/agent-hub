@@ -59,6 +59,8 @@ export type HouseInside = {
    * house the keyboard is on. It also marks the canvas with what it painted.
    */
   paint(surface: Surface, news: VillageNews, timeMs: number): void;
+  /** The open house in plain sentences for this frame's news; null while the plaza shows. Safe to call every frame. */
+  wordsNow(news: VillageNews): string | null;
   /** The buttons to lay over the picture: a door per house on the plaza, the way back while inside. */
   readonly controls: ReactNode;
   open(house: PlacedHouse): void;
@@ -144,6 +146,11 @@ export function useHouseInside(
     [canvasRef],
   );
 
+  const wordsNow = useCallback((newsNow: VillageNews): string | null => {
+    const house = pointerRef.current.openHouse;
+    return house ? describeInside(insideOf(house, newsNow, { awayAgents: awayIn(house, awayAgentsOfRef.current) })) : null;
+  }, []);
+
   const controls =
     openHouse === null ? (
       houses.map((house) => (
@@ -188,6 +195,7 @@ export function useHouseInside(
       ? describeInside(insideOf(openHouse, news, { awayAgents: awayIn(openHouse, options.awayAgentsOf) }))
       : null,
     paint,
+    wordsNow,
     controls,
     open,
     close,

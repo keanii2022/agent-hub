@@ -13,6 +13,7 @@ import {
 import type { Rect } from "../lib/village/plaza";
 import { VILLAGE_STATE_ROUTE, projectStateOf, type VillageState } from "../lib/village/state";
 import { expectTheFrozenVillage } from "./frozen-hub";
+import { sceneWords, startingWith } from "./scene-words";
 
 // Paused at a known moment, the village and every room in it always paint the same frame.
 const FIXED_TIME_MS = 4200;
@@ -103,7 +104,7 @@ test("clicking the approval-desk house opens its inside: one agent at its statio
   await door(page, approvalDeskHouse).click();
 
   await expectInside(canvas, approvalDeskHouse);
-  await expect(canvas).toHaveAttribute("aria-label", /One agent lives here, with a bed of its own\./);
+  await expect(canvas).toHaveAccessibleDescription(/One agent lives here, with a bed of its own\./);
   await expect(backButton(page)).toBeVisible();
   await expect(canvas).toHaveScreenshot("inside-1-agent-2x.png", { maxDiffPixels: 0, threshold: 0 });
 });
@@ -124,7 +125,7 @@ test("the inside works by keyboard: Tab to a house, Enter opens it, Esc returns 
 
   await page.keyboard.press("Enter");
   await expectInside(canvas, teamHouse);
-  await expect(canvas).toHaveAttribute("aria-label", /3 agents share the room and its bunk beds/);
+  await expect(canvas).toHaveAccessibleDescription(/3 agents share the room and its bunk beds/);
   await expect(backButton(page)).toBeFocused();
   await expect.poll(() => hasFocusMark(canvas, backButtonBounds)).toBe(true);
   await expect(canvas).toHaveScreenshot("inside-3-agents-2x.png", { maxDiffPixels: 0, threshold: 0 });
@@ -211,7 +212,11 @@ test("while a house is open the plaza's own controls are out of reach, and Esc o
 
   await door(page, approvalDeskHouse).click();
   await expectInside(canvas, approvalDeskHouse);
-  await expect(page.getByRole("button")).toHaveCount(1);
+  // The way back, and pause and speed, which work inside a house too.
+  await expect(page.getByRole("button")).toHaveCount(3);
+  await expect(backButton(page)).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Play", exact: true })).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Speed: normal", exact: true })).toHaveCount(1);
   await expect(page.getByRole("button", { name: COMPUTER_NAME })).toHaveCount(0);
   for (const house of villageHouses) await expect(door(page, house)).toHaveCount(0);
 
@@ -229,7 +234,7 @@ test("each agent's current step comes from the feed", async ({ page }) => {
     expect(project.agents.length, house.name).toBeGreaterThan(0);
     await door(page, house).click();
     await expectInside(canvas, house);
-    const words = (await canvas.getAttribute("aria-label")) ?? "";
+    const words = await sceneWords(canvas);
     for (const agent of project.agents) {
       expect(words, agent.name).toContain(
         `${agent.name} is ${agent.isWorking ? "working at its station" : "at its station, not working right now"}.`,
@@ -252,7 +257,7 @@ test("when the feed moves an agent to a new step, the open room shows the new st
   const canvas = await openPlaza(page);
   await door(page, approvalDeskHouse).click();
   await expectInside(canvas, approvalDeskHouse);
-  await expect(canvas).toHaveAttribute("aria-label", /refund-agent is working at its station\. Step: summary\./);
+  await expect(canvas).toHaveAccessibleDescription(/refund-agent is working at its station\. Step: summary\./);
   const roomBefore = await pictureOf(canvas, { x: 0, y: 15, width: SCREEN_WIDTH, height: 201 });
 
   village = {
@@ -269,7 +274,7 @@ test("when the feed moves an agent to a new step, the open room shows the new st
           },
     ),
   };
-  await expect(canvas).toHaveAttribute("aria-label", /Step: payout\. Paying back the morning's refunds\./, {
+  await expect(canvas).toHaveAccessibleDescription(/Step: payout\. Paying back the morning's refunds\./, {
     timeout: 10_000,
   });
   await expect.poll(() => pictureOf(canvas, { x: 0, y: 15, width: SCREEN_WIDTH, height: 201 })).not.toBe(roomBefore);
@@ -280,14 +285,14 @@ test("a house for sale is empty inside", async ({ page }) => {
   await door(page, houseForSale).click();
 
   await expectInside(canvas, houseForSale);
-  await expect(canvas).toHaveAttribute("aria-label", "Inside a house for sale. The room is empty. Nobody lives here yet.");
+  await expect(canvas).toHaveAccessibleDescription(startingWith("Inside a house for sale. The room is empty. Nobody lives here yet."));
   await expect(canvas).toHaveScreenshot("inside-for-sale-2x.png", { maxDiffPixels: 0, threshold: 0 });
 
   await page.keyboard.press("Escape");
   await expectThePlaza(canvas);
   await door(page, otherHouseForSale).click();
   await expectInside(canvas, otherHouseForSale);
-  await expect(canvas).toHaveAttribute("aria-label", "Inside a house for sale. The room is empty. Nobody lives here yet.");
+  await expect(canvas).toHaveAccessibleDescription(startingWith("Inside a house for sale. The room is empty. Nobody lives here yet."));
 });
 
 test("ten agents lay out in one room", async ({ page }) => {
@@ -318,9 +323,8 @@ test("H9: a house whose feed fails is dark inside with a plain note, and the oth
   const canvas = await openPlaza(page);
   await door(page, teamHouse).click();
   await expectInside(canvas, teamHouse);
-  await expect(canvas).toHaveAttribute(
-    "aria-label",
-    `Inside the ${teamHouse.name} house (demo). The room is dark: no news. This house's news could not be read.`,
+  await expect(canvas).toHaveAccessibleDescription(
+    startingWith(`Inside the ${teamHouse.name} house (demo). The room is dark: no news. This house's news could not be read.`),
   );
   const room = await coloursIn(canvas, { x: 0, y: 15, width: SCREEN_WIDTH, height: 201 });
   expect(room, "no lamp is lit").not.toContain(hex("lamp"));
@@ -330,7 +334,7 @@ test("H9: a house whose feed fails is dark inside with a plain note, and the oth
   await expectThePlaza(canvas);
   await door(page, approvalDeskHouse).click();
   await expectInside(canvas, approvalDeskHouse);
-  await expect(canvas).toHaveAttribute("aria-label", /refund-agent is working at its station\./);
+  await expect(canvas).toHaveAccessibleDescription(/refund-agent is working at its station\./);
   expect(await coloursIn(canvas, { x: 0, y: 15, width: SCREEN_WIDTH, height: 201 }), "its lamps are lit").toContain(
     hex("lamp"),
   );
@@ -360,7 +364,7 @@ test("H12: inside a house everything is told in plain words, with no rule codes 
     expect(openHouseWords(house)).not.toMatch(RULE_CODE);
     await door(page, house).click();
     await expectInside(canvas, house);
-    const words = (await canvas.getAttribute("aria-label")) ?? "";
+    const words = await sceneWords(canvas);
     expect(words).not.toMatch(RULE_CODE);
     expect(words).not.toMatch(/needs_human|result_ready|no_news|feed_failed/);
     await expect(page.locator("body")).not.toContainText(RULE_CODE);

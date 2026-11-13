@@ -244,6 +244,17 @@ Template:
 - Words, looks and who-goes-first were picked in the parallel run; see "Calls to review" in `PLAN.md`.
 **Left for later:** nothing for this step.
 
+## Step 15: Controls and access (2026-11-12)
+
+**Built:** A Pause / Play button with a P key, and a speed button (normal, 2 times, 4 times), in the plaza's top bar. A plain-words summary of the scene for screen readers, built from the same state the picture is drawn from, with a polite status line that speaks only real changes. One shared check that every clickable place on every screen is reached and worked by keyboard, and one shared scan that no rule codes or hub ids show anywhere (H12).
+**Decided:**
+- Pause freezes everything that moves (the human, the manager, walkers, the handover, house insides) and play picks up with no jump. Only the picture pauses: news still arrives, and new paperwork waits at its house until play, so nothing is lost.
+- The picture's own name is short now ("The plaza at dusk."); the summary carries the detail.
+- The keyboard check finds mouse-only controls too, and a built-in self-test proves such a control fails it, so a future control can't slip through.
+- The scan reads visible text and the names a screen reader speaks, on the plaza, every house, the desk (also after an accepted answer and after a refusal), the build board and the lab pages. Banned: rule codes, the hub's own line numbers and keys, and code words from the feed. A project's own name for a request may show small.
+- Keys and speeds were picked in the parallel run; see "Calls to review" in `PLAN.md`.
+**Left for later:** nothing for this step.
+
 ## Step 17: Clipboard on the human desk (2026-11-12)
 
 **Built:** A small clipboard on the pixel desk that the mouse and the keyboard both reach (and the C key from the plaza). It opens the build board (`/clipboard`), a normal web page in the desk's dusk look: one row per project with a bar of done steps out of the total, the numbers as text, and the name of the current step. The hub only reads the plans.

@@ -3,6 +3,7 @@ import { palette, type ColourName } from "../lib/village/engine";
 import { glassOfWindow, signStyles, villageHouses } from "../lib/village/houses";
 import type { Rect } from "../lib/village/plaza";
 import { expectTheFrozenVillage } from "./frozen-hub";
+import { sceneWords } from "./scene-words";
 
 // Paused at a known moment, the village always paints the same frame.
 const FIXED_TIME_MS = 4200;
@@ -87,14 +88,14 @@ test("a fixed time holds the neon still", async ({ page }) => {
 
 test("the picture's description names every house, for whoever cannot see it", async ({ page }) => {
   const canvas = await openVillage(page, `?time=${FIXED_TIME_MS}&scale=2`);
-  const description = (await canvas.getAttribute("aria-label")) ?? "";
+  const description = await sceneWords(canvas);
   for (const house of projectHouses) expect(description).toContain(house.project!);
   expect(description).toContain("2 houses for sale");
 });
 
 test("H10: a house on demo data is marked DEMO, on its sign and in the picture's description", async ({ page }) => {
   const canvas = await openVillage(page, `?time=${FIXED_TIME_MS}&scale=2`);
-  const description = (await canvas.getAttribute("aria-label")) ?? "";
+  const description = await sceneWords(canvas);
   for (const house of projectHouses) {
     expect(house.data).toBe("demo");
     expect(description).toContain(`${house.project} (demo)`);
@@ -108,6 +109,6 @@ test("H10: a house on demo data is marked DEMO, on its sign and in the picture's
 test("H12: nothing the houses add to the page is a rule code", async ({ page }) => {
   const canvas = await openVillage(page, `?time=${FIXED_TIME_MS}&scale=2`);
   const ruleCode = /\b[HQ]\d{1,2}\b/;
-  expect(await canvas.getAttribute("aria-label")).not.toMatch(ruleCode);
+  expect(await sceneWords(canvas)).not.toMatch(ruleCode);
   await expect(page.locator("body")).not.toContainText(ruleCode);
 });

@@ -13,6 +13,7 @@ import { palette } from "../lib/village/engine";
 import { housesToVisit, villageHouses } from "../lib/village/houses";
 import type { Rect } from "../lib/village/plaza";
 import { expectTheFrozenVillage } from "./frozen-hub";
+import { sceneWords } from "./scene-words";
 
 const round = managerRoundFor(villageHouses);
 const legStarts = legStartsOf(round);
@@ -138,7 +139,7 @@ test("the manager sets off from the desk when the clock runs, and reaches the fi
 
 test("the picture's description tells of the manager's round, house by house", async ({ page }) => {
   const canvas = await openVillageAt(page, 4200);
-  const description = (await canvas.getAttribute("aria-label")) ?? "";
+  const description = await sceneWords(canvas);
   expect(description).toContain(describeManagersRound(villageHouses));
   for (const house of occupied) expect(description).toContain(house.name);
 });
@@ -146,6 +147,6 @@ test("the picture's description tells of the manager's round, house by house", a
 test("H12: nothing the manager adds to the page is a rule code", async ({ page }) => {
   const canvas = await openVillageAt(page, momentOf(`waiting at ${occupied[0].name}`));
   const ruleCode = /\b[HQ]\d{1,2}\b/;
-  expect(await canvas.getAttribute("aria-label")).not.toMatch(ruleCode);
+  expect(await sceneWords(canvas)).not.toMatch(ruleCode);
   await expect(page.locator("body")).not.toContainText(ruleCode);
 });

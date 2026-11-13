@@ -10,6 +10,7 @@ import {
   type VillageState,
 } from "../lib/village/state";
 import { FROZEN_HUB_MOMENT, expectTheFrozenVillage } from "./frozen-hub";
+import { sceneWords } from "./scene-words";
 
 // Paused at a known moment, the village always paints the same frame.
 const FIXED_TIME_MS = 4200;
@@ -132,7 +133,7 @@ test("the village shows what the state says: a window per agent at home, bright 
   expect(await windowLights(canvas, approvalDeskHouse)).toEqual(["bright", "off"]);
   expect(await windowLights(canvas, teamHouse)).toEqual(["bright", "bright", "soft"]);
 
-  const description = (await canvas.getAttribute("aria-label")) ?? "";
+  const description = await sceneWords(canvas);
   expect(description).toContain("approval-desk: 1 agent home, 1 working, 2 waiting for your answer.");
   expect(description).toContain(`${teamHouse.project}: 3 agents home, 2 working, 1 waiting for your answer.`);
 });
@@ -174,7 +175,7 @@ test("H9: a house whose feed fails goes dark with a plain note while the others 
   expect(await neonIsOn(canvas, approvalDeskHouse)).toBe(true);
   expect(await hasTheNoNewsNote(canvas, approvalDeskHouse)).toBe(false);
 
-  const description = (await canvas.getAttribute("aria-label")) ?? "";
+  const description = await sceneWords(canvas);
   expect(description).toContain(`${teamHouse.project}: no news.`);
   expect(description).toContain("approval-desk: 1 agent home, 1 working");
   await expect(page.getByRole("heading", { name: "Agent Hub" })).toBeVisible();
@@ -186,7 +187,7 @@ test("H9: when the hub gives no answer every house goes dark, and the page itsel
   await page.route(`**${VILLAGE_STATE_ROUTE}`, (route) => route.fulfill({ status: 500, json: { problem: "broken" } }));
 
   const canvas = await openVillage(page);
-  await expect(canvas).toHaveAttribute("aria-label", /There is no news from any house\./);
+  await expect(canvas).toHaveAccessibleDescription(/There is no news from any house\./);
 
   for (const house of projectHouses) {
     await expect.poll(() => hasTheNoNewsNote(canvas, house), house.name).toBe(true);
@@ -200,9 +201,9 @@ test("H9: when the hub gives no answer every house goes dark, and the page itsel
 test("H12: the village's news is told in plain words, with no rule codes or feed words", async ({ page }) => {
   const canvas = await openVillage(page);
   await expectTheFrozenVillage(canvas);
-  await expect(canvas).toHaveAttribute("aria-label", /agents home/);
+  await expect(canvas).toHaveAccessibleDescription(/agents home/);
 
-  const description = (await canvas.getAttribute("aria-label")) ?? "";
+  const description = await sceneWords(canvas);
   expect(description).not.toMatch(/\b[HQ]\d{1,2}\b/);
   expect(description).not.toMatch(/needs_human|result_ready|no_news|feed_failed/);
   await expect(page.locator("body")).not.toContainText(/\b[HQ]\d{1,2}\b/);

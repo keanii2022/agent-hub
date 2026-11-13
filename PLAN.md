@@ -131,8 +131,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** steps 10 and 13.
   - **Out of scope:** new houses, new data formats.
 
-- [ ] **Step 15: Controls and access**
-  - **Status:** current
+- [x] **Step 15: Controls and access**
+  - **Status:** done
   - **Goal:** A speed button and a pause key. Every clickable place is reachable by keyboard. A plain-words summary of the scene for screen readers. A check that no rule codes or ids show on screen (H12).
   - **Done when:** Playwright tests pass for: every clickable place reachable by keyboard; pause freezes the village; speed changes it; a text scan of every screen finds no rule codes.
   - **Scope:** controls and labels across `app/` and `lib/village/`, `e2e/`.
@@ -140,7 +140,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** new features.
 
 - [ ] **Step 16: Safety check, README and demo**
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** A check that fails if a secret or a banned kind of name is in a tracked file (H13). A README with screenshots and a short demo.
   - **Done when:** the check passes, and fails on a planted fake secret; a fresh copy runs from the README alone (`npm install`, `npm run hub`); the owner has read the README and confirmed nothing private is in it.
   - **Scope:** `README.md`, `scripts/check-public.ts`, screenshots.
@@ -219,6 +219,11 @@ Choices made for the owner during the parallel run. Each is a best guess that ca
 - **Step 14: if the manager is already at that door,** he takes the urgent paperwork himself and the agent stays in.
 - **Step 14: two urgent agents go one at a time,** first heard first. One agent with two urgent items carries both in one walk.
 - **Step 14: only the agent that sent the item walks,** and only while the feed shows it at home. Otherwise the manager brings it on his next call.
+- **Step 15: the P key pauses** and there is a Pause / Play button; "or press P" sits beside it.
+- **Step 15: speeds are normal, 2 times and 4 times,** on one button that reads "Speed: normal" and so on.
+- **Step 15: pausing stops the picture, not the hub.** News still arrives and shows on the houses; new paperwork waits at its house until play. The screen says "Paused. News still comes in."
+- **Step 15: pause and speed sit in the middle of the top bar.** Tab order on the plaza is computer, houses, clipboard, pause, speed, then "Open the desk".
+- **Step 15: what counts as an id on screen.** The hub's own line numbers and keys never show. A project's own name for a request may show small.
 - **Step 17: the C key opens the clipboard** from the plaza; the top bar says "Press C for the clipboard".
 - **Step 17: the page is called "Your build board"** at `/clipboard`.
 - **Step 17: each bar is a row of squares,** one per step: green for done, yellow for the current step, dark for still to come, with "N of M steps done" and "Now on step X: name" beside it.

@@ -222,7 +222,7 @@ test("a scripted urgent event sends its own agent to the desk, while an ordinary
   answersAreHeld = null;
   letAnswersGo();
   // The page has heard: its words for a screen reader, which follow the news and not the clock, say so.
-  await expect(canvas).toHaveAttribute("aria-label", new RegExp(`${APPROVAL_DESK}: [^.]*1 waiting for your answer`));
+  await expect(canvas).toHaveAccessibleDescription(new RegExp(`${APPROVAL_DESK}: [^.]*1 waiting for your answer`));
 
   // On the very next frame the agent is out of its door: it did not wait for the manager.
   await runTheClockFor(page, 1);
@@ -249,7 +249,7 @@ test("a scripted urgent event sends its own agent to the desk, while an ordinary
   await page.getByRole("button", { name: openHouseWords(approvalDeskHouse), exact: true }).click();
   await runTheClockFor(page, 1);
   await expect(canvas).toHaveAttribute("data-inside-of", approvalDeskHouse.name);
-  await expect(canvas).toHaveAttribute("aria-label", new RegExp(`${agent} is away from its station\\.`));
+  await expect(canvas).toHaveAccessibleDescription(new RegExp(`${agent} is away from its station\\.`));
   await expect(canvas).toHaveScreenshot("urgent-away-inside-2x.png", { maxDiffPixels: 0, threshold: 0 });
   await page.getByRole("button", { name: BACK_TO_PLAZA_WORDS, exact: true }).click();
   await runTheClockFor(page, 1);
