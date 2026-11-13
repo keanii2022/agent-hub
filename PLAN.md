@@ -197,7 +197,7 @@ Choices made for the owner during the parallel run. Each is a best guess that ca
 - **Step 11: the log shows each project's newest 200 events.** Older ones stay in the record but there is no "show older" yet.
 - **Step 11: three projects are proven with a scripted hub in the browser test** (an invented third project), because the demo keeps two.
 - **Step 11: the desk remembers what it showed, per browser tab,** so the plaza's alert mark does not come back for the same papers.
-- **Step 12: one decision per request, ever.** The stricter reading of the rule: even if a request asks again later, or the project refused the first answer, the hub takes no second decision on it.
+- **Step 12: one decision per request, ever.** The stricter reading of the rule: even if a request asks again later, or the project refused the first answer, the hub takes no second decision on it. The owner agreed on 2026-11-13, for now.
 - **Step 12: approval-desk's stand-in door** accepts any reject with a note and any approve up to 400 euros. Above that it says "A refund over €400 has to be approved in approval-desk itself."
 - **Step 12: boxcutter's stand-in door** accepts anything except a yes to spending over 30 euros: "Spending over €30 has to be signed off in boxcutter itself."
 - **Step 12: buttons.** One per choice the request lists. Reject opens a note box ("Your note saying why (needed)"). Results get "Mark as seen".
