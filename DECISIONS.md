@@ -255,7 +255,7 @@ Template:
 - Keys and speeds were picked in the parallel run; see "Calls to review" in `PLAN.md`.
 **Left for later:** nothing for this step.
 
-## Step 16: Safety check, README and demo (2026-11-12, waiting for the owner)
+## Step 16: Safety check, README and demo (2026-11-12)
 
 **Built:** A check (`npm run check:public`) that looks through every file git tracks and fails on anything that must never be published: keys and tokens, passwords in config, tracked `.env` files, email addresses, phone numbers, home-folder paths and banned names (H13). A README for a stranger and for the owner in six months: what the hub is, how to run it, what you are looking at, a short demo to click through, the hub's promises, the optional settings, and how to run the tests. Four pictures in `docs/screenshots/`.
 **Decided:**
@@ -265,7 +265,7 @@ Template:
 - A fresh copy was proven to run from the README alone: cloned, installed, started, answered with "Agent Hub".
 - The README's pictures come from the tests' frozen hub, so they can be retaken the same way.
 **Left for later:**
-- Not ticked: the owner has to read the README and confirm nothing private is in it.
+- The owner approved the README on 2026-11-13, so the step is ticked.
 - No banned-names list exists yet, so those names are not checked until the owner writes one.
 - `.env.example` was never created (a permission rule blocks writing `.env` files from here).
 - `ARCHITECTURE.md` is out of date in a few places (the approval-desk paragraph, the folder list, the new routes).

@@ -139,8 +139,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** steps 11, 12, 13 and 14.
   - **Out of scope:** new features.
 
-- [ ] **Step 16: Safety check, README and demo**
-  - **Status:** current
+- [x] **Step 16: Safety check, README and demo**
+  - **Status:** done
   - **Goal:** A check that fails if a secret or a banned kind of name is in a tracked file (H13). A README with screenshots and a short demo.
   - **Done when:** the check passes, and fails on a planted fake secret; a fresh copy runs from the README alone (`npm install`, `npm run hub`); the owner has read the README and confirmed nothing private is in it.
   - **Scope:** `README.md`, `scripts/check-public.ts`, screenshots.
@@ -224,7 +224,6 @@ Choices made for the owner during the parallel run. Each is a best guess that ca
 - **Step 15: pausing stops the picture, not the hub.** News still arrives and shows on the houses; new paperwork waits at its house until play. The screen says "Paused. News still comes in."
 - **Step 15: pause and speed sit in the middle of the top bar.** Tab order on the plaza is computer, houses, clipboard, pause, speed, then "Open the desk".
 - **Step 15: what counts as an id on screen.** The hub's own line numbers and keys never show. A project's own name for a request may show small.
-- **Step 16: not ticked.** Everything is built and passing, but its last "done when" is the owner reading the README and confirming nothing private is in it.
 - **Step 16: the README's voice and order.** First person ("my agents"), short, no hype. It does not use the name "boxcutter". It says "You need Node 24".
 - **Step 16: the README's pictures** are the plaza, inside the three-agent house, the desk and the build board, in `docs/screenshots/`. `npm run screenshots` retakes the last two.
 - **Step 16: the safety check is `npm run check:public`.** Company, client and employer names are read from `private/banned-names.txt` (one per line, never committed). That file does not exist yet, so those names are not being checked.
