@@ -78,9 +78,11 @@ type PlazaScreenProps = FixedFrame & {
    * desk was opened. The mark over the computer has cleared by the time it is called.
    */
   onComputerPress?: () => void;
+  /** Asked once the page is up: the paperwork the owner has already seen at the desk, by key. */
+  papersSeenBefore?: () => readonly string[];
 };
 
-export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaScreenProps) {
+export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress, papersSeenBefore }: PlazaScreenProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const computerHasFocusRef = useRef(false);
   // The picture reads the ref on every frame; the words for a screen reader follow the same news as React state.
@@ -105,7 +107,7 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaS
     if (!canvas) return;
 
     const clock = createClock({ startAtMs: fixedTimeMs ?? 0, paused: fixedTimeMs !== null });
-    deliveryRef.current = deliveryStartingAt(clock.timeMs);
+    deliveryRef.current = deliveryStartingAt(clock.timeMs, papersSeenBefore?.());
     const screen = startScreen(canvas, {
       clock,
       pixelScale: pixelScale ?? undefined,

@@ -85,23 +85,32 @@ test("what is already waiting when the page opens is on the desk from the first 
 });
 
 for (const how of ["a click", "Enter", "Space"] as const) {
-  test(`opening the desk with ${how} clears the mark, keeps the stack, and goes nowhere`, async ({ page }) => {
+  test(`opening the desk with ${how} goes to the desk, and back on the plaza the mark is cleared and the stack kept`, async ({
+    page,
+  }) => {
     const pageErrors: Error[] = [];
     page.on("pageerror", (error) => pageErrors.push(error));
     const canvas = await openVillage(page, `?time=${FIXED_TIME_MS}&scale=2`);
     await expect(canvas).toHaveAttribute("data-desk-mark", "showing");
-    const papers = await canvas.getAttribute("data-desk-papers");
+    const papers = Number(await canvas.getAttribute("data-desk-papers"));
     const addressBefore = page.url();
 
     if (how === "a click") await computerButton(page).click();
     else await computerButton(page).press(how);
 
-    await expect(canvas).toHaveAttribute("data-desk-mark", "cleared");
-    await expect.poll(() => markIsPainted(canvas)).toBe(false);
-    expect(await stackIsPainted(canvas)).toBe(true);
-    await expect(canvas).toHaveAttribute("data-desk-papers", papers ?? "");
-    await expect(canvas).toHaveAttribute("data-delivery", /papers? (is|are) waiting on the desk\.$/);
+    // The desk is its own page, and it shows every paper that lay on the plaza's desk.
+    await expect(page).toHaveURL(/\/desk$/);
+    await expect(page.getByRole("region", { name: /Waiting for you/ }).getByRole("article")).toHaveCount(papers);
+
+    await page.goBack();
     expect(page.url()).toBe(addressBefore);
+    const canvasAgain = page.getByRole("img", { name: /plaza at dusk/i });
+    await expectTheFrozenVillage(canvasAgain);
+    await expect(canvasAgain).toHaveAttribute("data-desk-papers", String(papers));
+    await expect(canvasAgain).toHaveAttribute("data-desk-mark", "cleared");
+    expect(await markIsPainted(canvasAgain)).toBe(false);
+    expect(await stackIsPainted(canvasAgain)).toBe(true);
+    await expect(canvasAgain).toHaveAttribute("data-delivery", /papers? (is|are) waiting on the desk\.$/);
     expect(pageErrors).toEqual([]);
   });
 }
@@ -197,6 +206,10 @@ test("scripted \"needs a decision\" and \"result ready\" events play the whole h
   };
   let hubAnswers = nothingWaiting;
   await page.route(`**${VILLAGE_STATE_ROUTE}`, (route) => route.fulfill({ json: hubAnswers }));
+  // This test goes on watching the plaza after the computer is pressed, so the
+  // desk's own page is held back here and the village stays on screen. Going
+  // to the desk and coming back is checked in the tests above and in desk.spec.ts.
+  await page.route("**/desk*", () => {});
 
   await page.clock.install({ time: new Date(FROZEN_HUB_MOMENT) });
   await page.clock.pauseAt(new Date(FROZEN_HUB_MOMENT));
@@ -269,7 +282,7 @@ test("scripted \"needs a decision\" and \"result ready\" events play the whole h
   expect(await markIsPainted(canvas)).toBe(true);
   await expect(canvas).toHaveScreenshot("paperwork-dropped-2x.png", { maxDiffPixels: 0, threshold: 0 });
 
-  // The owner opens the desk: the mark clears, and stays cleared until the next drop.
+  // The owner presses the computer: the mark clears, and stays cleared until the next drop.
   await computerButton(page).click();
   await runTheClockFor(page, 1);
   await expect(canvas).toHaveAttribute("data-desk-mark", "cleared");

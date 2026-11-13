@@ -80,11 +80,10 @@ test("the computer is reached with the keyboard and shows a focus mark", async (
   await expect.poll(() => colourAt(canvas, focusMarkCorner.x, focusMarkCorner.y)).not.toBe(palette.lamp);
 });
 
-test("the computer is reached with a click on its picture, and does nothing yet", async ({ page }) => {
+test("the computer is reached with a click on its picture, and the click opens the desk", async ({ page }) => {
   const pageErrors: Error[] = [];
   page.on("pageerror", (error) => pageErrors.push(error));
   const canvas = await openPlaza(page, `?time=${FIXED_TIME_MS}&scale=2`, 2);
-  const addressBefore = page.url();
 
   const canvasBox = await canvas.boundingBox();
   if (!canvasBox) throw new Error("The canvas is not on the page");
@@ -98,9 +97,8 @@ test("the computer is reached with a click on its picture, and does nothing yet"
     canvasBox.y + middleOfGlass.y * pagePixelsPerVillagePixel,
   );
 
-  await expect(computerButton(page)).toBeFocused();
-  await computerButton(page).press("Enter");
-  expect(page.url()).toBe(addressBefore);
+  await expect(page).toHaveURL(/\/desk$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Your desk" })).toBeVisible();
   expect(pageErrors).toEqual([]);
 });
 

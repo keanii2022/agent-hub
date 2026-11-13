@@ -99,8 +99,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** step 9.
   - **Out of scope:** the desk screen (step 11); decisions (step 12).
 
-- [ ] **Step 11: Desk screen** (part 8)
-  - **Status:** current
+- [x] **Step 11: Desk screen** (part 8)
+  - **Status:** done
   - **Goal:** Clicking the computer, or pressing a key, opens the desk screen: a normal web page (not the pixel canvas) listing everything waiting from all projects, with who sent it, what it is, and how long it has waited. It also has a log of all events with filters by project and agent. Plain words only (H12). Look only; no decision buttons yet.
   - **Done when:** Playwright opens the desk from the computer and from the keyboard; it lists waiting items from at least three projects; the filters work; the log is in order; no rule codes appear on screen.
   - **Scope:** `app/desk/`, `lib/desk/`, `e2e/`.
@@ -108,7 +108,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** approve and reject (step 12); real projects.
 
 - [ ] **Step 12: Decisions from the desk** (parts 9 and 10)
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** Approve, or reject with a note, from the desk; and mark a ready result as "seen". A decision is written to the hub's record first, then handed to the project's door. In Stage 1 the door is a stand-in per demo project that re-checks with its own scripted rule and may refuse. The hub shows the project's answer in plain words. Settle Q7.
   - **Done when:** Playwright tests pass for: approve accepted by the stand-in (the stack shrinks, the house reacts); reject without a note refused (H7); stand-in refuses and the reason is shown (H2); a second decision on the same request refused (H6); a record that can't be written means nothing is sent (H5).
   - **Scope:** `lib/decisions/`, a decisions table in `lib/store/`, buttons on the desk screen, `tests/`, `e2e/`.
@@ -148,7 +148,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** new features; pushing to GitHub (the owner does that).
 
 - [ ] **Step 17: Clipboard on the human desk**
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** A clipboard on the human desk that shows the owner's build board: one bar per project with done/total and the current step, read from each project's PLAN.md. The hub only reads; nothing on the clipboard changes a plan.
   - **Done when:** the clipboard opens from the desk by click and by keyboard; its numbers match the PLAN.md files in a test with a scripted plan folder.
   - **Scope:** `lib/village/clipboard.ts`, `app/`, `e2e/`.
@@ -191,6 +191,12 @@ Choices made for the owner during the parallel run. Each is a best guess that ca
 - **Step 10: the alert mark is yellow** (red is kept for a blocked house). It clears when the computer is pressed, and comes back when something new lands or the page is reloaded.
 - **Step 10: the owner looks up** while his shoulder is tapped.
 - **Step 10: the stack on the desk has no DEMO tag.** The houses do. Say if the desk should too.
+- **Step 11: the D key opens the desk** from the plaza and Esc leaves it. The plaza's top bar says "Open the desk or press D".
+- **Step 11: the desk's order.** Urgent first, then what needs an answer, then what is ready to read, longest wait on top. One list, each card tagged "Needs your answer" or "Ready to read", plus URGENT and DEMO.
+- **Step 11: wording.** The page is titled "Your desk"; the log is "Everything that happened", newest first. A line at the top explains the DEMO tag whenever scripted items show.
+- **Step 11: the log shows each project's newest 200 events.** Older ones stay in the record but there is no "show older" yet.
+- **Step 11: three projects are proven with a scripted hub in the browser test** (an invented third project), because the demo keeps two.
+- **Step 11: the desk remembers what it showed, per browser tab,** so the plaza's alert mark does not come back for the same papers.
 - **Step 13: agents are small robots**, in the same metal as the broken robot arms on the plaza.
 - **Step 13: the inside opens in place** on the same picture, with a "< Plaza" button at the top left and Esc to go back.
 - **Step 13: room layout.** One to five agents sit in one row, six to ten in two rows. A lone agent gets a single bed and a tidy room; two or more get bunk beds, one per two agents.

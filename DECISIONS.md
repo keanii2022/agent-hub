@@ -187,6 +187,23 @@ Template:
 - The mark comes back after a reload, because nothing remembers what the owner has already seen. Step 11 can hand that back in.
 - The screen-reader text does not mention the stack or the mark yet (step 15).
 
+## Step 11: Desk screen (2026-11-12)
+
+**Built:** The desk (`/desk`): an ordinary web page in the village's dusk colours. It lists everything waiting for the owner from all projects, each with who sent it, what it is, how long it has waited and the choices on offer, with urgent and DEMO items marked. Below that is a log of everything that happened, with filters by project and by agent. It opens from a click on the computer, Enter or Space on it, or the D key, and Esc goes back. It only reads.
+**Decided:**
+- The desk gets its data from read-only routes it asks from the browser (`/api/village` and a new `/api/desk/log`), so a quiet hub or one failing project never blanks the page (H9).
+- The three-project case is proven with a scripted hub answer in the browser test, with an invented third project, because the demo keeps two projects. The real frozen hub covers those two.
+- A real house's log shows real lines only, and a demo house's scripted lines only, the same as the village.
+- A line's `details` are not shown, because some values read like code (H12). A browser test scans the desk for rule codes.
+- The desk remembers what it has shown for this browser tab, so the plaza's alert mark stays cleared for those papers.
+- Each waiting card has a place for actions at its foot, empty for now. Step 12 fills it.
+- Order, wording and the shortcut key were picked in the parallel run; see "Calls to review" in `PLAN.md`.
+**Left for later:**
+- The log shows each project's newest 200 events, with no way to page further back.
+- Ready results pile up on the desk until step 12's "seen".
+- Filters are not kept in the page address.
+- `ARCHITECTURE.md` does not mention `/api/desk/log` yet.
+
 ## Step 13: Inside the house (2026-11-12)
 
 **Built:** Every house on the plaza is a real button the mouse and the keyboard both reach. Opening one shows its inside: one station per agent (a small robot at a desk) with a card giving the agent's name, its current step and what it is doing, straight from the feed. Two or more agents get bunk beds and a worn-out look. A for-sale house is empty, and a house with no news is dark. Esc or the "< Plaza" button goes back, and focus returns to the house that was opened. The DEMO tag stays visible inside (H10).
