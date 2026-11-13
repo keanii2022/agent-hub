@@ -174,6 +174,19 @@ Template:
 **Left for later:**
 - The screen-reader text describes the round as a whole, not what he is doing right now. Step 15 has what it needs to say that.
 
+## Step 13: Inside the house (2026-11-12)
+
+**Built:** Every house on the plaza is a real button the mouse and the keyboard both reach. Opening one shows its inside: one station per agent (a small robot at a desk) with a card giving the agent's name, its current step and what it is doing, straight from the feed. Two or more agents get bunk beds and a worn-out look. A for-sale house is empty, and a house with no news is dark. Esc or the "< Plaza" button goes back, and focus returns to the house that was opened. The DEMO tag stays visible inside (H10).
+**Decided:**
+- The room's layout is worked out from the list of agents alone (1 to 10), apart from the drawing, and tested as data.
+- The ten-agent room is drawn from invented state on a throwaway page (`/lab/inside`), so the demo scripts stay as they are.
+- The inside takes a per-agent "away" flag already, for step 14.
+- The pixel font has no euro sign, so a room writes "EUR" instead.
+- Looks, layout and wording were picked in the parallel run; see "Calls to review" in `PLAN.md`.
+**Left for later:**
+- A euro sign in the pixel font.
+- While a house is open, the plaza is still drawn underneath each frame. Wasteful, not visible.
+
 ## Step 18: First real house: approval-desk (2026-11-12, not finished)
 
 **Built:** A read-only translator (`lib/feed/translators/approval-desk.ts`) that turns approval-desk's logbook rows into checked feed lines marked real, each keeping its own time. When the hub is started with `APPROVAL_DESK_DATABASE` set, it feeds the last ten entries into its record, then anything newer every five seconds; the house loses its DEMO tag and its scripted day is not played. Unset, nothing changes.

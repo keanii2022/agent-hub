@@ -115,8 +115,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** step 11.
   - **Out of scope:** any real project; changing approval-desk; how decisions travel to real projects (Q6, Stage 2).
 
-- [ ] **Step 13: Inside the house** (part 7)
-  - **Status:** current
+- [x] **Step 13: Inside the house** (part 7)
+  - **Status:** done
   - **Goal:** Clicking a house opens its inside: the agents at work at their stations, showing their current step from the feed. Two or more agents get a bunk bed and a worn-out, hard-working look. Any number of agents (1 to 10) lays out sensibly. A for-sale house is empty. There is a way back to the plaza.
   - **Done when:** houses with 1, 3 and 10 agents all lay out; each agent's current step comes from the feed; the for-sale inside is empty; Esc or a back button returns to the plaza; it works by keyboard; screenshot tests pass.
   - **Scope:** `lib/village/interiors/`, `tests/`, `e2e/`.
@@ -185,6 +185,14 @@ Choices made for the owner during the parallel run. Each is a best guess that ca
 - **Step 9: how the manager looks.** A small man in a dark hat with a red band, grey suit, red tie and a moustache.
 - **Step 9: his pace.** He knocks three times, waits about two and a half seconds at each door, and rests four seconds at the desk between rounds. A full round of today's two houses takes about thirty seconds.
 - **Step 9: his words.** "walking to X", "knocking at X", "waiting at X", "walking back to the desk", "standing at the desk".
+- **Step 13: agents are small robots**, in the same metal as the broken robot arms on the plaza.
+- **Step 13: the inside opens in place** on the same picture, with a "< Plaza" button at the top left and Esc to go back.
+- **Step 13: room layout.** One to five agents sit in one row, six to ten in two rows. A lone agent gets a single bed and a tidy room; two or more get bunk beds, one per two agents.
+- **Step 13: the worn-out look** for two or more agents: bent antenna, a plaster, a half-shut eye, rust, a mug, litter and a piled-up pinboard.
+- **Step 13: stations are small.** In a one-agent room the robot and desk are small against a lot of floor. Likely the first thing to want bigger.
+- **Step 13: long text is cut.** A card shows about three to six lines; the rest ends in "...". In a full room an agent name over twelve letters is cut too.
+- **Step 13: empty-room words.** "Nobody lives here yet." / "Nobody is home right now." / "Nothing has been heard from this house for a while." / "This house's news could not be read."
+- **Step 13: door names** read "Open the approval-desk house" and "Open the house for sale, left of the lower street".
 - **Step 18: not ticked.** The translator is built and tested, but no approval-desk database holds ten logbook entries (the seeded one has none, its prepared queue has three), so "plays its last ten" is proven only on invented rows. Making real entries means running approval-desk, which is the owner's call.
 - **Step 18: old real entries are shown honestly.** Each line keeps its own time, so a house fed by old entries is dark with "no news" and no DEMO tag. Times are never moved to look live.
 - **Step 18: a real house waits one hour before going dark** (demo houses wait five minutes).

@@ -5,6 +5,7 @@ import { describeManagersRound, managerDrawable, managerStateAt } from "../chara
 import { SCREEN_HEIGHT, SCREEN_WIDTH, createClock, palette, startScreen } from "../engine";
 import { drawVillage } from "../houses/draw";
 import { describeHouses, villageHouses } from "../houses/village";
+import { useHouseInside } from "../interiors/HouseInside";
 import { describeVillageNews, statusOfVillage, type VillageNews } from "../state/house-status";
 import { watchVillageState } from "../state/watch";
 import type { FixedFrame } from "./frameQuery";
@@ -74,6 +75,7 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaS
   const villageNewsRef = useRef<VillageNews>("loading");
   const [villageNews, setVillageNews] = useState<VillageNews>("loading");
   const [canvasSize, setCanvasSize] = useState<CanvasSize | null>(null);
+  const houseInside = useHouseInside(villageHouses, villageNews, canvasRef);
 
   useEffect(
     () =>
@@ -101,6 +103,7 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaS
           statusOfVillage(news),
           [managerDrawable(managerStateAt(timeMs, villageHouses))],
         );
+        houseInside.paint(surface, news, timeMs);
         // Written in the same frame as the picture, so whoever reads the mark
         // (a browser test, say) can trust the picture already shows that news.
         if (typeof news === "string") delete canvas.dataset.villageAsOf;
@@ -143,12 +146,13 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaS
         <canvas
           ref={canvasRef}
           role="img"
-          aria-label={`The plaza at dusk. The human sits at his desk in the middle, typing at his computer. ${describeHouses()} ${describeManagersRound(villageHouses)} ${describeVillageNews(villageNews)}`.trim()}
+          aria-label={houseInside.words ?? `The plaza at dusk. The human sits at his desk in the middle, typing at his computer. ${describeHouses()} ${describeManagersRound(villageHouses)} ${describeVillageNews(villageNews)}`.trim()}
         />
         <div style={overlayStyle}>
           <button
             type="button"
             aria-label="The computer on the desk"
+            hidden={houseInside.openHouse !== null}
             style={computerButtonStyle}
             onClick={onComputerPress}
             onFocus={(event) => {
@@ -159,6 +163,7 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaS
               computerHasFocusRef.current = false;
             }}
           />
+          {houseInside.controls}
         </div>
       </div>
     </main>
