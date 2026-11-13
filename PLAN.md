@@ -91,8 +91,8 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Dependencies:** steps 7 and 8.
   - **Out of scope:** handover, paperwork, the exclamation mark, urgent walkers.
 
-- [ ] **Step 10: Handover and the paperwork stack** (part 7)
-  - **Status:** current
+- [x] **Step 10: Handover and the paperwork stack** (part 7)
+  - **Status:** done
   - **Goal:** When a house has something waiting for the owner (a request that needs a decision, or a result that is ready), the agent hands it to the manager at the door ("oh snap, master has to see this"). The manager walks it to the desk smoking, taps the owner on the shoulder ("here you go, master"), and drops a big stack. The stack grows with the number of waiting items. An exclamation mark shows above the computer until the desk is opened.
   - **Done when:** scripted "needs a decision" and "result ready" events play the full sequence; the stack size follows the waiting count; the exclamation mark shows, then clears when the desk is opened; tests check the sequence state.
   - **Scope:** village animation and state in `lib/village/`, `tests/`, `e2e/`.
@@ -100,7 +100,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** the desk screen (step 11); decisions (step 12).
 
 - [ ] **Step 11: Desk screen** (part 8)
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** Clicking the computer, or pressing a key, opens the desk screen: a normal web page (not the pixel canvas) listing everything waiting from all projects, with who sent it, what it is, and how long it has waited. It also has a log of all events with filters by project and agent. Plain words only (H12). Look only; no decision buttons yet.
   - **Done when:** Playwright opens the desk from the computer and from the keyboard; it lists waiting items from at least three projects; the filters work; the log is in order; no rule codes appear on screen.
   - **Scope:** `app/desk/`, `lib/desk/`, `e2e/`.
@@ -124,7 +124,7 @@ Stage 1 makes no paid AI calls and no network calls. All data is scripted and ma
   - **Out of scope:** approval-desk's detailed scene (Stage 2); agents walking out (step 14).
 
 - [ ] **Step 14: Urgent walkers** (part 7)
-  - **Status:** not-started
+  - **Status:** current
   - **Goal:** When the feed marks an item urgent, the agent leaves the house, walks the path smoking, taps the owner's shoulder, and drops its paperwork without waiting for the manager. Settle Q8.
   - **Done when:** an urgent scripted event triggers the walk; non-urgent items still go through the manager; the stack and exclamation mark behave as in step 10; a house shows that its agent is away while walking; tests check the sequence state.
   - **Scope:** `lib/village/characters/` and village state, `tests/`, `e2e/`.
@@ -185,6 +185,12 @@ Choices made for the owner during the parallel run. Each is a best guess that ca
 - **Step 9: how the manager looks.** A small man in a dark hat with a red band, grey suit, red tie and a moustache.
 - **Step 9: his pace.** He knocks three times, waits about two and a half seconds at each door, and rests four seconds at the desk between rounds. A full round of today's two houses takes about thirty seconds.
 - **Step 9: his words.** "walking to X", "knocking at X", "waiting at X", "walking back to the desk", "standing at the desk".
+- **Step 10: what is already waiting when the page opens is already on the desk**, with the alert mark showing. Nobody carries it. Only news that arrives while the page is open gets the handover.
+- **Step 10: a house hands over everything it has waiting in one trip**, during the manager's wait at its door.
+- **Step 10: the stack.** Each item is a small wad of paper; an urgent one wears a red tab. Past four items the older ones press thin; past twelve the stack stops growing, leans, and sheets lie on the ground. Decisions and results look the same.
+- **Step 10: the alert mark is yellow** (red is kept for a blocked house). It clears when the computer is pressed, and comes back when something new lands or the page is reloaded.
+- **Step 10: the owner looks up** while his shoulder is tapped.
+- **Step 10: the stack on the desk has no DEMO tag.** The houses do. Say if the desk should too.
 - **Step 13: agents are small robots**, in the same metal as the broken robot arms on the plaza.
 - **Step 13: the inside opens in place** on the same picture, with a "< Plaza" button at the top left and Esc to go back.
 - **Step 13: room layout.** One to five agents sit in one row, six to ten in two rows. A lone agent gets a single bed and a tidy room; two or more get bunk beds, one per two agents.

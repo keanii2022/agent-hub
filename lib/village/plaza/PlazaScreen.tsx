@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { describeManagersRound, managerDrawable, managerStateAt } from "../characters/manager";
+import { describeManagersRound } from "../characters/manager";
+import {
+  deliveryAfter,
+  deliveryDrawables,
+  deliveryFollowing,
+  deliveryMarksOf,
+  deliverySceneOf,
+  deliveryStartingAt,
+  drawDeliveryAir,
+} from "../delivery";
 import { SCREEN_HEIGHT, SCREEN_WIDTH, createClock, palette, startScreen } from "../engine";
 import { drawVillage } from "../houses/draw";
 import { describeHouses, villageHouses } from "../houses/village";
@@ -64,7 +73,10 @@ const computerButtonStyle: CSSProperties = {
 type CanvasSize = { width: number; height: number };
 
 type PlazaScreenProps = FixedFrame & {
-  /** Called when the computer is clicked, or pressed with Enter or Space. Left out, the computer does nothing. */
+  /**
+   * Called when the computer is clicked, or pressed with Enter or Space: the
+   * desk was opened. The mark over the computer has cleared by the time it is called.
+   */
   onComputerPress?: () => void;
 };
 
@@ -76,6 +88,8 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaS
   const [villageNews, setVillageNews] = useState<VillageNews>("loading");
   const [canvasSize, setCanvasSize] = useState<CanvasSize | null>(null);
   const houseInside = useHouseInside(villageHouses, villageNews, canvasRef);
+  // What has been carried to the desk so far: stepped on every frame, and by the press that opens the desk.
+  const deliveryRef = useRef(deliveryStartingAt(fixedTimeMs ?? 0));
 
   useEffect(
     () =>
@@ -91,18 +105,26 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaS
     if (!canvas) return;
 
     const clock = createClock({ startAtMs: fixedTimeMs ?? 0, paused: fixedTimeMs !== null });
+    deliveryRef.current = deliveryStartingAt(clock.timeMs);
     const screen = startScreen(canvas, {
       clock,
       pixelScale: pixelScale ?? undefined,
       draw: (surface, timeMs) => {
         const news = villageNewsRef.current;
+        const delivery = (deliveryRef.current = deliveryFollowing(deliveryRef.current, timeMs, news));
+        const scene = deliverySceneOf(delivery);
         drawVillage(
           surface,
-          plazaStateAt(timeMs, { computerHasFocus: computerHasFocusRef.current }),
+          plazaStateAt(timeMs, {
+            computerHasFocus: computerHasFocusRef.current,
+            ownerIsBeingTapped: scene.ownerIsBeingTapped,
+          }),
           villageHouses,
           statusOfVillage(news),
-          [managerDrawable(managerStateAt(timeMs, villageHouses))],
+          deliveryDrawables(scene),
         );
+        drawDeliveryAir(surface, scene);
+        Object.assign(canvas.dataset, deliveryMarksOf(delivery));
         houseInside.paint(surface, news, timeMs);
         // Written in the same frame as the picture, so whoever reads the mark
         // (a browser test, say) can trust the picture already shows that news.
@@ -154,7 +176,11 @@ export function PlazaScreen({ fixedTimeMs, pixelScale, onComputerPress }: PlazaS
             aria-label="The computer on the desk"
             hidden={houseInside.openHouse !== null}
             style={computerButtonStyle}
-            onClick={onComputerPress}
+            onClick={() => {
+              const delivery = deliveryRef.current;
+              deliveryRef.current = deliveryAfter(delivery, { type: "desk opened", atMs: delivery.atMs });
+              onComputerPress?.();
+            }}
             onFocus={(event) => {
               // A mouse click focuses the button too, but only keyboard focus needs a mark.
               computerHasFocusRef.current = event.currentTarget.matches(":focus-visible");

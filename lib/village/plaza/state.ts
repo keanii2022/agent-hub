@@ -8,6 +8,8 @@ import { plazaLayout, type Point } from "./layout";
 export type PlazaInput = {
   /** The keyboard is on the computer, so it shows its focus mark. */
   readonly computerHasFocus?: boolean;
+  /** Someone has a hand on his shoulder, so he looks up from his screen for as long as it stays there. */
+  readonly ownerIsBeingTapped?: boolean;
 };
 
 export type ComputerState = {
@@ -127,7 +129,16 @@ function wiresAreSparkingAt(timeMs: number): boolean {
 
 export function plazaStateAt(timeMs: number, input: PlazaInput = {}): PlazaState {
   const time = Math.max(0, timeMs);
-  const human = humanStateAt(time);
+  const atHisRoutine = humanStateAt(time);
+  const human: HumanState = input.ownerIsBeingTapped
+    ? {
+        ...atHisRoutine,
+        activity: "looking around",
+        head: "at the viewer",
+        arms: "resting on the keys",
+        holdingMug: false,
+      }
+    : atHisRoutine;
   return {
     timeMs: time,
     human,

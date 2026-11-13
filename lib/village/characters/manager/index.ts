@@ -1,17 +1,26 @@
-export { drawManager, managerDrawable } from "./draw";
 export {
+  drawArmToTheShoulder,
+  drawManager,
+  drawManagersSmoke,
+  managerDrawable,
+  managerDrawables,
+} from "./draw";
+export {
+  HAND_ON_SHOULDER_MS,
   KNOCKS_AT_A_DOOR,
   KNOCK_EVERY_MS,
   KNUCKLES_ON_DOOR_MS,
   MANAGER_PACE,
   MANAGER_STRIDE_PART_PIXELS,
   REST_AT_THE_DESK_MS,
+  SHOULDER_TAP_EVERY_MS,
   WAIT_AT_A_DOOR_MS,
   describeManagersRound,
   legStartsOf,
   legsOfACall,
   legsOfTheReturn,
   managerHome,
+  managerOnLeg,
   managerRoundFor,
   managerStateAt,
   walkLeg,
@@ -19,7 +28,9 @@ export {
   type ManagerRound,
   type ManagerState,
   type RoundLeg,
+  type SmokePuff,
   type StandingLeg,
   type WalkLeg,
 } from "./round";
+export { managerSmokeOn } from "./smoke";
 export { MANAGER_HEIGHT, MANAGER_WIDTH, managerPictures, managerPoints } from "./sprites";

@@ -174,6 +174,19 @@ Template:
 **Left for later:**
 - The screen-reader text describes the round as a whole, not what he is doing right now. Step 15 has what it needs to say that.
 
+## Step 10: Handover and the paperwork stack (2026-11-12)
+
+**Built:** When a house has something waiting for the owner, its agent steps out at the door during the manager's call and hands it over ("oh snap, master has to see this"). The manager carries it to the desk smoking, taps the owner on the shoulder ("here you go, master") and drops it on the stack. The stack grows and shrinks with what is waiting. A yellow exclamation mark shows above the computer until the computer is pressed.
+**Decided:**
+- What has been carried so far is history, not something the clock alone can tell. It is kept as a small state machine (`lib/village/delivery/`): each item goes from the house, to handed over, to carried, to the desk. The page steps it; the drawing only reads it. Tests play scripted "needs a decision" and "result ready" news through the whole sequence.
+- Items already waiting when the page opens are on the desk from the first frame, so a fixed frame is always the same.
+- The same landing, stack and mark work for any carrier, so step 14's walkers reuse them.
+- "The desk was opened" is the press on the computer. Step 11 makes the same press open the desk screen.
+- Looks and timing were picked in the parallel run; see "Calls to review" in `PLAN.md`.
+**Left for later:**
+- The mark comes back after a reload, because nothing remembers what the owner has already seen. Step 11 can hand that back in.
+- The screen-reader text does not mention the stack or the mark yet (step 15).
+
 ## Step 13: Inside the house (2026-11-12)
 
 **Built:** Every house on the plaza is a real button the mouse and the keyboard both reach. Opening one shows its inside: one station per agent (a small robot at a desk) with a card giving the agent's name, its current step and what it is doing, straight from the feed. Two or more agents get bunk beds and a worn-out look. A for-sale house is empty, and a house with no news is dark. Esc or the "< Plaza" button goes back, and focus returns to the house that was opened. The DEMO tag stays visible inside (H10).

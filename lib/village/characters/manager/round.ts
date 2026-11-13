@@ -33,7 +33,21 @@ export const managerHome: { readonly at: Point; readonly facing: Facing } = {
   facing: "right",
 };
 
-export type ManagerActivity = "walking" | "knocking" | "waiting" | "at the desk";
+export type ManagerActivity =
+  | "walking"
+  | "knocking"
+  | "waiting"
+  | "at the desk"
+  // The rest only happen on a trip to the desk with paperwork (`lib/village/delivery`).
+  | "being handed paperwork"
+  | "taking paperwork"
+  | "tapping the shoulder"
+  | "putting paperwork down"
+  | "standing back";
+
+export const SHOULDER_TAP_EVERY_MS = 400;
+/** How long his hand stays on the owner's shoulder at each tap. */
+export const HAND_ON_SHOULDER_MS = 180;
 
 export type WalkLeg = {
   readonly activity: "walking";
@@ -123,6 +137,9 @@ export function managerRoundFor(houses: readonly PlacedHouse[]): ManagerRound {
   return round;
 }
 
+/** A puff of cigarette smoke: thick when fresh, then rising, then thin before it is gone. */
+export type SmokePuff = { readonly at: Point; readonly age: "fresh" | "rising" | "thin" };
+
 /** Everything the manager is doing at one moment, as plain data. Drawing reads this and nothing else. */
 export type ManagerState = {
   readonly activity: ManagerActivity;
@@ -139,13 +156,20 @@ export type ManagerState = {
   readonly stride: StridePart | null;
   /** True for the moment of each knock that his knuckles are on the door. */
   readonly knucklesOnDoor: boolean;
+  /** True for the moment of each tap that his hand is on the owner's shoulder. Only set on a trip to the desk. */
+  readonly handOnShoulder?: boolean;
+  /** He has paperwork in his arms. Only set on a trip to the desk. */
+  readonly carriesPaperwork?: boolean;
+  /** Puffs from his cigarette. Only set on a trip to the desk. */
+  readonly smoke?: readonly SmokePuff[];
   /** Which leg of the round he is on, counted from 0. */
   readonly legNumber: number;
   /** Rounds finished since time zero. */
   readonly roundsDone: number;
 };
 
-function stateOnLeg(leg: RoundLeg, msIntoLeg: number): Omit<ManagerState, "legNumber" | "roundsDone"> {
+/** What he is doing `msIntoLeg` after starting a leg, empty-handed: a trip to the desk adds what he carries. */
+export function managerOnLeg(leg: RoundLeg, msIntoLeg: number): Omit<ManagerState, "legNumber" | "roundsDone"> {
   if (leg.activity === "walking") {
     const place = walkerAt(leg.route, msIntoLeg, MANAGER_PACE);
     return {
@@ -168,6 +192,9 @@ function stateOnLeg(leg: RoundLeg, msIntoLeg: number): Omit<ManagerState, "legNu
     headingFor: null,
     stride: null,
     knucklesOnDoor: leg.activity === "knocking" && msIntoLeg % KNOCK_EVERY_MS < KNUCKLES_ON_DOOR_MS,
+    ...(leg.activity === "tapping the shoulder"
+      ? { handOnShoulder: msIntoLeg % SHOULDER_TAP_EVERY_MS < HAND_ON_SHOULDER_MS }
+      : {}),
   };
 }
 
@@ -190,7 +217,7 @@ export function managerStateAt(timeMs: number, houses: readonly PlacedHouse[]): 
   for (let legNumber = 0; legNumber < round.legs.length; legNumber += 1) {
     const leg = round.legs[legNumber];
     if (msIntoLeg < leg.lastsMs) {
-      return { ...stateOnLeg(leg, msIntoLeg), legNumber, roundsDone };
+      return { ...managerOnLeg(leg, msIntoLeg), legNumber, roundsDone };
     }
     msIntoLeg -= leg.lastsMs;
   }

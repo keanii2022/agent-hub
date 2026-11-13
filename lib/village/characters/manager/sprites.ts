@@ -13,6 +13,12 @@ export const managerPoints = {
   knuckles: { x: 14, y: 5 },
   /** The middle of the red band of his hat, while he stands. */
   hatBand: { x: 9, y: 3 },
+  /** His shoulder seen from the side, where an arm reaching forward starts. */
+  shoulder: { x: 11, y: 12 },
+  /** The middle of the paperwork in his arms, seen from the side. */
+  paperworkInArms: { x: 14, y: 14 },
+  /** The glowing end of his cigarette, by the way he faces. From behind it is hidden: the smoke rises over his hat. */
+  cigaretteTip: { side: { x: 14, y: 8 }, down: { x: 12, y: 8 }, up: { x: 9, y: 0 } },
 } as const;
 
 const colours: ColourKey = {
@@ -176,6 +182,27 @@ const sideArms = {
   swungBack: { rows: mirrored(armRows.swungForward), x: BODY_X + 3, y: SIDE_ARM_Y },
 } satisfies Record<string, Part>;
 
+// Paperwork is held against his front with both arms, so a carrying picture has no swinging arm.
+const paperworkFromTheSide: Part = {
+  x: BODY_X + 5,
+  y: SIDE_ARM_Y,
+  rows: [".kk........", "kiik.kkkkkk", "kiik.kcccck", "kiiikkuuuuk", ".kiiiekccck", "..kkkkkkkkk"],
+};
+const paperworkFromTheFront: Part = {
+  x: BODY_X + 2,
+  y: HEAD_ROWS + 3,
+  rows: ["kkkkkkkkkk", "kcccccccck", "ekuuuuuuke", "kcccccccck", "kkkkkkkkkk"],
+};
+/** From behind only the end of it shows, past his elbow. */
+const paperworkFromBehind: Part = {
+  x: BODY_X + 12,
+  y: HEAD_ROWS + 3,
+  rows: ["kkkk", "kcck", "kuuk", "kcck", "kkkk"],
+};
+
+const cigaretteFromTheSide: Part = { x: BODY_X + 11, y: 8, rows: ["cE"] };
+const cigaretteFromTheFront: Part = { x: BODY_X + 8, y: 8, rows: ["ccE"] };
+
 const RAISED_ARM_X = BODY_X + 10;
 const armRaisedToTheDoor: Part = {
   x: RAISED_ARM_X,
@@ -282,6 +309,35 @@ function walkingUpOrDown(headPart: Part, torsoPart: Part): Record<StridePart, Sp
 const walkingDown = walkingUpOrDown(headFromTheFront, torsoFromTheFront);
 const walkingUp = walkingUpOrDown(headFromBehind, torsoFromBehind);
 
+function carryingFromTheSide(legsPart: Part, rowsLower: number): Sprite {
+  return pictureOf([
+    legsPart,
+    ...[torsoFromTheSide, paperworkFromTheSide, headFromTheSide, cigaretteFromTheSide].map((part) =>
+      lowered(part, rowsLower),
+    ),
+  ]);
+}
+
+function carryingUpOrDown(headPart: Part, torsoPart: Part, held: readonly Part[]): Record<StridePart, Sprite> {
+  const standing = pictureOf([legsFromTheFront.standing, torsoPart, headPart, ...held]);
+  const stepping = (legsPart: Part): Sprite =>
+    pictureOf([legsPart, ...[torsoPart, headPart, ...held].map((part) => lowered(part))]);
+  return {
+    0: stepping(legsFromTheFront.leftFootDown),
+    1: standing,
+    2: stepping(legsFromTheFront.rightFootDown),
+    3: standing,
+  };
+}
+
+const carryingDown = carryingUpOrDown(headFromTheFront, torsoFromTheFront, [
+  paperworkFromTheFront,
+  cigaretteFromTheFront,
+]);
+const carryingUp = carryingUpOrDown(headFromBehind, torsoFromBehind, [paperworkFromBehind]);
+const carryingPassingFromTheSide = carryingFromTheSide(legsFromTheSide.passing, 0);
+const carryingStridingFromTheSide = carryingFromTheSide(legsFromTheSide.apart, 1);
+
 /** Every picture of the manager. The ones from the side face right; mirror them for left. */
 export const managerPictures = {
   standing: {
@@ -298,6 +354,24 @@ export const managerPictures = {
     } satisfies Record<StridePart, Sprite>,
     down: walkingDown,
     up: walkingUp,
+  },
+  /** With paperwork in his arms and a cigarette in his mouth. */
+  carrying: {
+    standing: {
+      side: carryingFromTheSide(legsFromTheSide.standing, 0),
+      down: carryingDown[1],
+      up: carryingUp[1],
+    },
+    walking: {
+      side: {
+        0: carryingStridingFromTheSide,
+        1: carryingPassingFromTheSide,
+        2: carryingStridingFromTheSide,
+        3: carryingPassingFromTheSide,
+      } satisfies Record<StridePart, Sprite>,
+      down: carryingDown,
+      up: carryingUp,
+    },
   },
   knocking: {
     knucklesOnDoor: pictureOf([
